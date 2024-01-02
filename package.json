@@ -1,0 +1,71 @@
+{
+  "name": "stylus",
+  "displayName": "Stylus",
+  "description": "Arbitrum Stylus Vscode Extension",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+          "command": "stylusWorkspace.addExistingProject",
+          "title": "Add Existing Project"
+      },
+      {
+          "command": "stylusWorkspace.removeProject",
+          "title": "Remove Project"
+      },
+      {
+          "command": "stylusWorkspace.createNewProject",
+          "title": "Create New Project"
+      }
+    ],
+    "viewsContainers": {
+        "activitybar": [
+            {
+                "id": "stylusWorkspace",
+                "title": "Stylus Workspace",
+                "icon": "media/stylus.svg"
+            }
+        ]
+    },
+    "views": {
+        "stylusWorkspace": [
+            {
+                "id": "projectView",
+                "name": "Projects"
+            },
+            {
+                "id": "contractView",
+                "name": "Contracts",
+                "when": "stylusWorkspace.cargoStylusInstalled"
+            }
+        ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8"
+  }
+}
