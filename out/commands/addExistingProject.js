@@ -26,18 +26,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addExistingProjectHandler = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
-function addExistingProjectHandler() {
+const path = __importStar(require("path"));
+const toml_1 = require("toml");
+const Project_1 = require("../models/Project"); // Ensure that Project is properly imported
+function addExistingProjectHandler(projectDataProvider) {
     vscode.window
         .showOpenDialog({ canSelectFolders: true, canSelectMany: false })
         .then((folderUri) => {
         if (folderUri && folderUri[0]) {
-            const folderPath = folderUri[0].fsPath;
-            // Check if it's a Stylus project (e.g., look for specific files)
-            if (fs.existsSync(`${folderPath}/some_stylus_indicator.file`)) {
-                // Add logic to add project to the view
+            const projectPath = folderUri[0].fsPath;
+            const projectName = path.basename(projectPath); // Extracts the folder name
+            const cargoFilePath = `${projectPath}/Cargo.toml`; // Corrected variable name
+            // Check if Cargo.toml exists in the directory
+            if (fs.existsSync(cargoFilePath)) {
+                const cargoFileContent = fs.readFileSync(cargoFilePath, "utf8");
+                try {
+                    const cargoToml = (0, toml_1.parse)(cargoFileContent);
+                    // Check if 'stylus-sdk' dependency exists
+                    if (cargoToml.dependencies &&
+                        cargoToml.dependencies["stylus-sdk"]) {
+                        projectDataProvider.addProject(new Project_1.Project(projectName, projectPath, new Date()));
+                    }
+                    else {
+                        vscode.window.showErrorMessage("Selected directory does not contain a valid Stylus project. This may be because 'stylus-sdk' dependency is missing in Cargo.toml. Make sure you selected root folder of the Stylus project!");
+                    }
+                }
+                catch (error) {
+                    vscode.window.showErrorMessage("Error parsing Cargo.toml: " + error);
+                }
             }
             else {
-                vscode.window.showErrorMessage("Selected directory is not a Stylus project.");
+                vscode.window.showErrorMessage("Selected directory does not contain a valid Stylus project. Make sure you selected root folder of the Stylus project!");
             }
         }
     });

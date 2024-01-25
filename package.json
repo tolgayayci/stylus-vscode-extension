@@ -14,16 +14,28 @@
   "contributes": {
     "commands": [
       {
+        "command": "stylusWorkspace.createNewProject",
+        "title": "Create New Stylus Project",
+        "icon": "$(add)"
+      },
+      {
           "command": "stylusWorkspace.addExistingProject",
-          "title": "Add Existing Project"
+          "title": "Add Existing Stylus Project",
+          "icon": "$(folder)"
+
       },
       {
-          "command": "stylusWorkspace.removeProject",
-          "title": "Remove Project"
+        "command": "stylusWorkspace.removeProjectFromView",
+        "title": "Remove Existing Stylus Project From View",
+        "icon": "$(remove)"
       },
       {
-          "command": "stylusWorkspace.createNewProject",
-          "title": "Create New Project"
+        "command": "stylusWorkspace.openProjectFolder",
+        "title": "Open Project Folder"
+      },     
+      {
+        "command": "stylusWorkspace.removeProjectFromView",
+        "title": "Remove Project Folder"
       }
     ],
     "viewsContainers": {
@@ -36,17 +48,40 @@
         ]
     },
     "views": {
-        "stylusWorkspace": [
-            {
-                "id": "projectView",
-                "name": "Projects"
-            },
-            {
-                "id": "contractView",
-                "name": "Contracts",
-                "when": "stylusWorkspace.cargoStylusInstalled"
-            }
-        ]
+      "stylusWorkspace": [
+        {
+          "id": "projectView",
+          "name": "Projects",
+          "icon": "media/project-icon.svg" 
+        },
+        {
+          "id": "contractView",
+          "name": "Contracts",
+          "when": "stylusWorkspace.cargoStylusInstalled"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "stylusWorkspace.createNewProject",
+          "when": "view == projectView",
+          "group": "navigation"
+        },
+        {
+          "command": "stylusWorkspace.addExistingProject",
+          "when": "view == projectView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.removeProjectFromView",
+            "group": "inline"
+        }
+    ]
+    
     }
   },
   "scripts": {

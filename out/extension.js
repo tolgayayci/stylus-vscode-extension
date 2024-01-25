@@ -25,27 +25,37 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
-const checkCargoStylus_1 = require("./utils/checkCargoStylus");
+//Commands
 const createNewProject_1 = require("./commands/createNewProject");
 const addExistingProject_1 = require("./commands/addExistingProject");
-const removeProject_1 = require("./commands/removeProject");
+//Data Providers
+const ProjectDataProvider_1 = require("./dataProviders/ProjectDataProvider");
+//Utils
+const checkCargoStylus_1 = require("./utils/checkCargoStylus");
 function activate(context) {
+    //Data Provider for the project view
+    const projectDataProvider = new ProjectDataProvider_1.ProjectDataProvider();
+    vscode.window.registerTreeDataProvider("projectView", projectDataProvider);
     (0, checkCargoStylus_1.checkCargoStylus)()
         .then(() => {
         // Command to create a new project
-        let disposableCreateProject = vscode.commands.registerCommand("stylusWorkspace.createProject", () => {
-            (0, createNewProject_1.createNewProjectHandler)();
+        let disposableCreateProject = vscode.commands.registerCommand("stylusWorkspace.createNewProject", () => {
+            (0, createNewProject_1.createNewProjectHandler)(projectDataProvider);
         });
         // Command to add an existing project
         let disposableAddExistingProject = vscode.commands.registerCommand("stylusWorkspace.addExistingProject", () => {
-            (0, addExistingProject_1.addExistingProjectHandler)();
+            (0, addExistingProject_1.addExistingProjectHandler)(projectDataProvider);
         });
-        // Command to remove a project
-        let disposableRemoveProject = vscode.commands.registerCommand("stylusWorkspace.removeProject", () => {
-            (0, removeProject_1.removeProjectHandler)();
+        let disposableOpenProject = vscode.commands.registerCommand("stylusWorkspace.openProjectFolder", (projectPath) => {
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(projectPath), true);
+        });
+        let disposableRemoveProjectFromView = vscode.commands.registerCommand("stylusWorkspace.removeProjectFromView", (project) => {
+            if (project && project.path) {
+                projectDataProvider.removeProject(project.path);
+            }
         });
         // Register the commands and subscriptions
-        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableRemoveProject);
+        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableOpenProject, disposableRemoveProjectFromView);
         // You can also update the context here, if needed
         vscode.commands.executeCommand("setContext", "stylusWorkspace.cargoStylusInstalled", true);
     })
