@@ -8,7 +8,7 @@ export class ProjectDataProvider implements vscode.TreeDataProvider<Project> {
   readonly onDidChangeTreeData: vscode.Event<Project | undefined | void> =
     this._onDidChangeTreeData.event;
 
-  private projects: Project[] = [];
+  public projects: Project[] = [];
 
   getTreeItem(element: Project): vscode.TreeItem {
     const treeItem = new vscode.TreeItem(element.name);

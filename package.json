@@ -15,27 +15,43 @@
     "commands": [
       {
         "command": "stylusWorkspace.createNewProject",
-        "title": "Create New Stylus Project",
+        "title": "Stylus: Create New Project",
         "icon": "$(add)"
       },
       {
-          "command": "stylusWorkspace.addExistingProject",
-          "title": "Add Existing Stylus Project",
-          "icon": "$(folder)"
+        "command": "stylusWorkspace.addExistingProject",
+        "title": "Stylus: Add Project",
+        "icon": "$(folder)"
 
       },
       {
         "command": "stylusWorkspace.removeProjectFromView",
-        "title": "Remove Existing Stylus Project From View",
+        "title": "Stylus: Remove Project",
         "icon": "$(remove)"
       },
       {
         "command": "stylusWorkspace.openProjectFolder",
         "title": "Open Project Folder"
-      },     
+      },
       {
-        "command": "stylusWorkspace.removeProjectFromView",
-        "title": "Remove Project Folder"
+        "command": "stylusWorkspace.exportAbi",
+        "title": "Stylus: Export Abi"
+      },
+      {
+        "command": "stylusWorkspace.check",
+        "title": "Stylus: Check"
+      },
+      {
+        "command": "stylusWorkspace.deploy",
+        "title": "Stylus: Deploy"
+      },
+      {
+        "command": "stylusWorkspace.replay",
+        "title": "Stylus: Replay"
+      },
+      {
+        "command": "stylusWorkspace.trace",
+        "title": "Stylus: Trace"
       }
     ],
     "viewsContainers": {

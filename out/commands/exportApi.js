@@ -23,26 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addExistingProjectHandler = void 0;
+exports.exportAbiHandler = void 0;
 const vscode = __importStar(require("vscode"));
-const path = __importStar(require("path"));
-const Project_1 = require("../models/Project"); // Ensure that Project is properly imported
-const checkIsStylusProject_1 = require("../utils/checkIsStylusProject");
-function addExistingProjectHandler(projectDataProvider) {
-    vscode.window
-        .showOpenDialog({ canSelectFolders: true, canSelectMany: false })
-        .then((folderUri) => {
-        if (folderUri && folderUri[0]) {
-            const projectPath = folderUri[0].fsPath;
-            const projectName = path.basename(projectPath);
-            if ((0, checkIsStylusProject_1.checkIsStylusProject)(projectPath)) {
-                projectDataProvider.addProject(new Project_1.Project(projectName, projectPath, new Date()));
-            }
-            else {
-                vscode.window.showErrorMessage("Selected directory does not contain a valid Stylus project.");
-            }
-        }
-    });
+function exportAbiHandler(projectDataProvider) {
+    vscode.window.showInformationMessage("Export Abi command executed!");
 }
-exports.addExistingProjectHandler = addExistingProjectHandler;
-//# sourceMappingURL=addExistingProject.js.map
+exports.exportAbiHandler = exportAbiHandler;
+//# sourceMappingURL=exportApi.js.map

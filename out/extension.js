@@ -28,6 +28,11 @@ const vscode = __importStar(require("vscode"));
 //Commands
 const createNewProject_1 = require("./commands/createNewProject");
 const addExistingProject_1 = require("./commands/addExistingProject");
+const exportAbi_1 = require("./commands/exportAbi");
+const check_1 = require("./commands/check");
+const deploy_1 = require("./commands/deploy");
+const replay_1 = require("./commands/replay");
+const trace_1 = require("./commands/trace");
 //Data Providers
 const ProjectDataProvider_1 = require("./dataProviders/ProjectDataProvider");
 //Utils
@@ -54,8 +59,23 @@ function activate(context) {
                 projectDataProvider.removeProject(project.path);
             }
         });
+        let disposableExportApi = vscode.commands.registerCommand("stylusWorkspace.exportAbi", () => {
+            (0, exportAbi_1.exportAbiHandler)(projectDataProvider);
+        });
+        let disposableCheck = vscode.commands.registerCommand("stylusWorkspace.check", () => {
+            (0, check_1.checkHandler)(projectDataProvider);
+        });
+        let disposableDeploy = vscode.commands.registerCommand("stylusWorkspace.deploy", () => {
+            (0, deploy_1.deployHandler)(projectDataProvider);
+        });
+        let disposableReplay = vscode.commands.registerCommand("stylusWorkspace.replay", () => {
+            (0, replay_1.replayHandler)(projectDataProvider);
+        });
+        let disposableTrace = vscode.commands.registerCommand("stylusWorkspace.trace", () => {
+            (0, trace_1.traceHandler)(projectDataProvider);
+        });
         // Register the commands and subscriptions
-        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableOpenProject, disposableRemoveProjectFromView);
+        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableOpenProject, disposableRemoveProjectFromView, disposableExportApi, disposableCheck, disposableDeploy, disposableReplay, disposableTrace);
         // You can also update the context here, if needed
         vscode.commands.executeCommand("setContext", "stylusWorkspace.cargoStylusInstalled", true);
     })

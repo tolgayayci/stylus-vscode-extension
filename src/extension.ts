@@ -3,6 +3,11 @@ import * as vscode from "vscode";
 //Commands
 import { createNewProjectHandler } from "./commands/createNewProject";
 import { addExistingProjectHandler } from "./commands/addExistingProject";
+import { exportAbiHandler } from "./commands/exportAbi";
+import { checkHandler } from "./commands/check";
+import { deployHandler } from "./commands/deploy";
+import { replayHandler } from "./commands/replay";
+import { traceHandler } from "./commands/trace";
 
 //Data Providers
 import { ProjectDataProvider } from "./dataProviders/ProjectDataProvider";
@@ -53,12 +58,52 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
+      let disposableExportApi = vscode.commands.registerCommand(
+        "stylusWorkspace.exportAbi",
+        () => {
+          exportAbiHandler(projectDataProvider);
+        }
+      );
+
+      let disposableCheck = vscode.commands.registerCommand(
+        "stylusWorkspace.check",
+        () => {
+          checkHandler(projectDataProvider);
+        }
+      );
+
+      let disposableDeploy = vscode.commands.registerCommand(
+        "stylusWorkspace.deploy",
+        () => {
+          deployHandler(projectDataProvider);
+        }
+      );
+
+      let disposableReplay = vscode.commands.registerCommand(
+        "stylusWorkspace.replay",
+        () => {
+          replayHandler(projectDataProvider);
+        }
+      );
+
+      let disposableTrace = vscode.commands.registerCommand(
+        "stylusWorkspace.trace",
+        () => {
+          traceHandler(projectDataProvider);
+        }
+      );
+
       // Register the commands and subscriptions
       context.subscriptions.push(
         disposableCreateProject,
         disposableAddExistingProject,
         disposableOpenProject,
-        disposableRemoveProjectFromView
+        disposableRemoveProjectFromView,
+        disposableExportApi,
+        disposableCheck,
+        disposableDeploy,
+        disposableReplay,
+        disposableTrace
       );
 
       // You can also update the context here, if needed
