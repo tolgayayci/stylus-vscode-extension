@@ -27,17 +27,22 @@ exports.traceHandler = void 0;
 const vscode = __importStar(require("vscode"));
 const checkCargoStylus_1 = require("../utils/checkCargoStylus");
 const checkIsStylusProject_1 = require("../utils/checkIsStylusProject");
-function traceHandler(projectDataProvider) {
+function traceHandler(projectDataProvider, directProject) {
     (0, checkCargoStylus_1.checkCargoStylus)()
         .then(() => {
-        selectProjectFolderAndExecuteTrace(projectDataProvider);
+        selectProjectFolderAndExecuteTrace(projectDataProvider, directProject);
     })
         .catch((err) => {
         vscode.window.showErrorMessage(`Cargo Stylus is not installed: ${err.message}`);
     });
 }
 exports.traceHandler = traceHandler;
-function selectProjectFolderAndExecuteTrace(projectDataProvider) {
+function selectProjectFolderAndExecuteTrace(projectDataProvider, directProject) {
+    if (directProject) {
+        // Directly execute check for the provided project
+        executeCargoStylusTrace(directProject.path);
+        return;
+    }
     const workspaceFolders = vscode.workspace.workspaceFolders;
     const projectDataProviderProjects = projectDataProvider.projects;
     if ((!workspaceFolders || workspaceFolders.length === 0) &&

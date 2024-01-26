@@ -1,12 +1,19 @@
 import * as vscode from "vscode";
 import { checkCargoStylus } from "../utils/checkCargoStylus";
 import { checkIsStylusProject } from "../utils/checkIsStylusProject";
+import { Project } from "../models/Project";
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
 
-export function exportAbiHandler(projectDataProvider: ProjectDataProvider) {
+export function exportAbiHandler(
+  projectDataProvider: ProjectDataProvider,
+  directProject?: Project
+) {
   checkCargoStylus()
     .then(() => {
-      selectProjectFolderAndExecuteExportAbi(projectDataProvider);
+      selectProjectFolderAndExecuteExportAbi(
+        projectDataProvider,
+        directProject
+      );
     })
     .catch((err) => {
       vscode.window.showErrorMessage(
@@ -16,8 +23,15 @@ export function exportAbiHandler(projectDataProvider: ProjectDataProvider) {
 }
 
 function selectProjectFolderAndExecuteExportAbi(
-  projectDataProvider: ProjectDataProvider
+  projectDataProvider: ProjectDataProvider,
+  directProject?: Project
 ) {
+  if (directProject) {
+    // Directly execute check for the provided project
+    executeCargoStylusExportAbi(directProject.path);
+    return;
+  }
+
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const projectDataProviderProjects = projectDataProvider.projects;
 

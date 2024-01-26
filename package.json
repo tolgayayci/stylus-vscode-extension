@@ -14,15 +14,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "stylusWorkspace.createNewProject",
-        "title": "Stylus: Create New Project",
-        "icon": "$(add)"
-      },
-      {
         "command": "stylusWorkspace.addExistingProject",
         "title": "Stylus: Add Project",
         "icon": "$(folder)"
-
       },
       {
         "command": "stylusWorkspace.removeProjectFromView",
@@ -30,36 +24,64 @@
         "icon": "$(remove)"
       },
       {
+        "command": "stylusWorkspace.createNewProject",
+        "title": "Stylus (Cargo):  Create New Project",
+        "icon": "$(add)"
+      },
+      {
         "command": "stylusWorkspace.openProjectFolder",
-        "title": "Open Project Folder"
+        "title": "Stylus: Open Project Folder"
       },
       {
         "command": "stylusWorkspace.exportAbi",
-        "title": "Stylus: Export Abi"
+        "title": "Stylus (Cargo): Export Abi"
       },
       {
         "command": "stylusWorkspace.check",
-        "title": "Stylus: Check"
+        "title": "Stylus (Cargo): Check"
       },
       {
         "command": "stylusWorkspace.deploy",
-        "title": "Stylus: Deploy"
+        "title": "Stylus (Cargo): Deploy"
       },
       {
         "command": "stylusWorkspace.replay",
-        "title": "Stylus: Replay"
+        "title": "Stylus (Cargo): Replay"
       },
       {
         "command": "stylusWorkspace.trace",
-        "title": "Stylus: Trace"
+        "title": "Stylus (Cargo): Trace"
+      },
+      {
+        "command": "stylusWorkspace.openProject",
+        "title": "Open Project"
+      },
+      {
+        "command": "stylusWorkspace.openProjectInNewWindow",
+        "title": "Open Project in New Window"
+      },
+      {
+        "command": "stylusWorkspace.revealInFinder",
+        "title": "Reveal in Finder"
+      },
+      {
+        "command": "stylusWorkspace.addToWorkspace",
+        "title": "Add to Workspace"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "projectView",
+        "contents": "In order to use this extension you need to create a new stylus project or add existing one.\n[Create New Stylus Project](command:stylusWorkspace.createNewProject)\n[Add Existing One](command:stylusWorkspace.addExistingProject)\nTo learn more about how to use Stylus in VS Code [read extension docs](https://github.com/tolgayayci/stylus-vscode-extension).",
+        "when": "workbenchState !== empty"
       }
     ],
     "viewsContainers": {
         "activitybar": [
             {
                 "id": "stylusWorkspace",
-                "title": "Stylus Workspace",
-                "icon": "media/stylus.svg"
+                "title": "Stylus",
+                "icon": "src/media/icons/arbitrum-arb-logo.svg"
             }
         ]
     },
@@ -69,11 +91,6 @@
           "id": "projectView",
           "name": "Projects",
           "icon": "media/project-icon.svg" 
-        },
-        {
-          "id": "contractView",
-          "name": "Contracts",
-          "when": "stylusWorkspace.cargoStylusInstalled"
         }
       ]
     },
@@ -92,12 +109,56 @@
       ],
       "view/item/context": [
         {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openProject",
+          "group": "navigation@1"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.openProjectInNewWindow",
+            "group": "navigation@2"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.revealInFinder",
+            "group": "navigation@3"
+        },
+        {
             "when": "view == projectView && viewItem == project",
             "command": "stylusWorkspace.removeProjectFromView",
             "group": "inline"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.exportAbi",
+            "group": "stylus@1"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.check",
+            "group": "stylus@2"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.deploy",
+            "group": "stylus@3"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.replay",
+            "group": "stylus@4"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.trace",
+            "group": "stylus@5"
+        },
+        {
+            "when": "view == projectView && viewItem == project",
+            "command": "stylusWorkspace.addToWorkspace",
+            "common": "common@1"
         }
-    ]
-    
+      ]
     }
   },
   "scripts": {

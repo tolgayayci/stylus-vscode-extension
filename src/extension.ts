@@ -11,13 +11,14 @@ import { traceHandler } from "./commands/trace";
 
 //Data Providers
 import { ProjectDataProvider } from "./dataProviders/ProjectDataProvider";
+import { Project } from "./models/Project";
 
 //Utils
 import { checkCargoStylus } from "./utils/checkCargoStylus";
 
 export function activate(context: vscode.ExtensionContext) {
   //Data Provider for the project view
-  const projectDataProvider = new ProjectDataProvider();
+  const projectDataProvider = new ProjectDataProvider(context);
   vscode.window.registerTreeDataProvider("projectView", projectDataProvider);
 
   checkCargoStylus()
@@ -60,36 +61,79 @@ export function activate(context: vscode.ExtensionContext) {
 
       let disposableExportApi = vscode.commands.registerCommand(
         "stylusWorkspace.exportAbi",
-        () => {
-          exportAbiHandler(projectDataProvider);
+        (project: Project) => {
+          exportAbiHandler(projectDataProvider, project);
         }
       );
 
       let disposableCheck = vscode.commands.registerCommand(
         "stylusWorkspace.check",
-        () => {
-          checkHandler(projectDataProvider);
+        (project: Project) => {
+          checkHandler(projectDataProvider, project);
         }
       );
 
       let disposableDeploy = vscode.commands.registerCommand(
         "stylusWorkspace.deploy",
-        () => {
-          deployHandler(projectDataProvider);
+        (project: Project) => {
+          deployHandler(projectDataProvider, project);
         }
       );
 
       let disposableReplay = vscode.commands.registerCommand(
         "stylusWorkspace.replay",
-        () => {
-          replayHandler(projectDataProvider);
+        (project: Project) => {
+          replayHandler(projectDataProvider, project);
         }
       );
 
       let disposableTrace = vscode.commands.registerCommand(
         "stylusWorkspace.trace",
-        () => {
-          traceHandler(projectDataProvider);
+        (project: Project) => {
+          traceHandler(projectDataProvider, project);
+        }
+      );
+
+      let disposableOpenFolder = vscode.commands.registerCommand(
+        "stylusWorkspace.openProject",
+        (project: Project) => {
+          vscode.commands.executeCommand(
+            "vscode.openFolder",
+            vscode.Uri.file(project.path),
+            false // This should be false for opening in the same window
+          );
+        }
+      );
+
+      let disposableOpenProjectInNewWindow = vscode.commands.registerCommand(
+        "stylusWorkspace.openProjectInNewWindow",
+        (project: Project) => {
+          vscode.commands.executeCommand(
+            "vscode.openFolder",
+            vscode.Uri.file(project.path),
+            true // This should be true for opening in a new window
+          );
+        }
+      );
+
+      let disposableRevealInFinder = vscode.commands.registerCommand(
+        "stylusWorkspace.revealInFinder",
+        (project: Project) => {
+          vscode.env.openExternal(vscode.Uri.file(project.path));
+        }
+      );
+
+      let disposableAddToWorkspace = vscode.commands.registerCommand(
+        "stylusWorkspace.addToWorkspace",
+        (project: Project) => {
+          const uri = vscode.Uri.file(project.path);
+          vscode.workspace.updateWorkspaceFolders(
+            vscode.workspace.workspaceFolders
+              ? vscode.workspace.workspaceFolders.length
+              : 0,
+            null,
+            { uri }
+          );
         }
       );
 
@@ -103,7 +147,11 @@ export function activate(context: vscode.ExtensionContext) {
         disposableCheck,
         disposableDeploy,
         disposableReplay,
-        disposableTrace
+        disposableTrace,
+        disposableOpenFolder,
+        disposableOpenProjectInNewWindow,
+        disposableRevealInFinder,
+        disposableAddToWorkspace
       );
 
       // You can also update the context here, if needed

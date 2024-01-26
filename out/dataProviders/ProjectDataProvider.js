@@ -24,44 +24,52 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectDataProvider = void 0;
+// dataProviders/ProjectDataProvider.ts
 const vscode = __importStar(require("vscode"));
 class ProjectDataProvider {
+    context;
     _onDidChangeTreeData = new vscode.EventEmitter();
     onDidChangeTreeData = this._onDidChangeTreeData.event;
-    projects = [];
+    projects;
+    constructor(context) {
+        this.context = context;
+        this.projects = this.loadProjects();
+    }
     getTreeItem(element) {
         const treeItem = new vscode.TreeItem(element.name);
-        treeItem.command = {
-            command: "stylusWorkspace.openProjectFolder",
-            title: "Open Project",
-            arguments: [element.path], // Assuming 'path' is a property of the Project model
-        };
-        // Set an icon for the remove action
-        treeItem.iconPath = new vscode.ThemeIcon("delete"); // Using a built-in 'delete' icon
-        // Add a tooltip
-        treeItem.tooltip = `Remove ${element.name}`;
-        // Context value used for showing conditional commands in the context menu
+        treeItem.iconPath = new vscode.ThemeIcon("file-code");
+        treeItem.tooltip = `Project path: ${element.path}`;
         treeItem.contextValue = "project";
         return treeItem;
     }
     getChildren(element) {
         if (element) {
-            // Here, handle the scenario where you need to return children of a specific project.
-            // If projects don't have children in your model, you can just return an empty array.
+            // Handle children of a project if applicable
             return Promise.resolve([]);
         }
         else {
-            // Return root elements
             return Promise.resolve(this.projects);
         }
     }
     addProject(project) {
         this.projects.push(project);
+        this.saveProjects();
         this._onDidChangeTreeData.fire();
     }
     removeProject(projectPath) {
-        this.projects = this.projects.filter((project) => project.path !== projectPath);
+        this.projects = this.projects.filter((p) => p.path !== projectPath);
+        this.saveProjects();
         this._onDidChangeTreeData.fire();
+    }
+    saveProjects() {
+        this.context.globalState.update("projects", JSON.stringify(this.projects));
+    }
+    loadProjects() {
+        const projectsJson = this.context.globalState.get("projects");
+        if (projectsJson) {
+            return JSON.parse(projectsJson);
+        }
+        return [];
     }
 }
 exports.ProjectDataProvider = ProjectDataProvider;

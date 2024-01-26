@@ -1,12 +1,16 @@
 import * as vscode from "vscode";
 import { checkCargoStylus } from "../utils/checkCargoStylus";
 import { checkIsStylusProject } from "../utils/checkIsStylusProject";
+import { Project } from "../models/Project";
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
 
-export function checkHandler(projectDataProvider: ProjectDataProvider) {
+export function checkHandler(
+  projectDataProvider: ProjectDataProvider,
+  directProject?: Project
+) {
   checkCargoStylus()
     .then(() => {
-      selectProjectFolderAndExecuteCheck(projectDataProvider);
+      selectProjectFolderAndExecuteCheck(projectDataProvider, directProject);
     })
     .catch((err) => {
       vscode.window.showErrorMessage(
@@ -16,8 +20,15 @@ export function checkHandler(projectDataProvider: ProjectDataProvider) {
 }
 
 function selectProjectFolderAndExecuteCheck(
-  projectDataProvider: ProjectDataProvider
+  projectDataProvider: ProjectDataProvider,
+  directProject?: Project
 ) {
+  if (directProject) {
+    // Directly execute check for the provided project
+    executeCargoStylusCheck(directProject.path);
+    return;
+  }
+
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const projectDataProviderProjects = projectDataProvider.projects;
 
