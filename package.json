@@ -38,7 +38,10 @@
       },
       {
         "command": "stylusWorkspace.check",
-        "title": "Stylus (Cargo): Check"
+        "title": "Stylus (Cargo): Check",
+        "views": {
+          "cargoStylus": true
+        }
       },
       {
         "command": "stylusWorkspace.deploy",
@@ -67,6 +70,20 @@
       {
         "command": "stylusWorkspace.addToWorkspace",
         "title": "Add to Workspace"
+      },
+      {
+        "command": "stylusWorkspace.showCommandOptions",
+        "title": "Options"
+      },
+      {
+        "command": "stylusWorkspace.showInputBoxes",
+        "title": "Show Input Boxes"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "rust",
+        "path": "src/snippets/snippets.json"
       }
     ],
     "viewsWelcome": [
@@ -77,20 +94,26 @@
       }
     ],
     "viewsContainers": {
-        "activitybar": [
-            {
-                "id": "stylusWorkspace",
-                "title": "Stylus",
-                "icon": "src/media/icons/arbitrum-arb-logo.svg"
-            }
-        ]
+      "activitybar": [
+        {
+          "id": "stylusWorkspace",
+          "title": "Stylus",
+          "icon": "src/media/icons/arbitrum-arb-logo.svg"
+        }
+      ]
     },
     "views": {
       "stylusWorkspace": [
         {
           "id": "projectView",
           "name": "Projects",
-          "icon": "media/project-icon.svg" 
+          "icon": "media/project-icon.svg"
+        },
+        {
+          "type": "webview",
+          "id": "chatView",
+          "name": "Chat with Stylus GPT",
+          "canMoveView": true
         }
       ]
     },
@@ -114,53 +137,64 @@
           "group": "navigation@1"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.openProjectInNewWindow",
-            "group": "navigation@2"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openProjectInNewWindow",
+          "group": "navigation@2"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.revealInFinder",
-            "group": "navigation@3"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.revealInFinder",
+          "group": "navigation@3"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.removeProjectFromView",
-            "group": "inline"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.removeProjectFromView",
+          "group": "inline"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.exportAbi",
-            "group": "stylus@1"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.exportAbi",
+          "group": "stylus@1"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.check",
-            "group": "stylus@2"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.check",
+          "group": "stylus@2"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.deploy",
-            "group": "stylus@3"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.deploy",
+          "group": "stylus@3"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.replay",
-            "group": "stylus@4"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.replay",
+          "group": "stylus@4"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.trace",
-            "group": "stylus@5"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.trace",
+          "group": "stylus@5"
         },
         {
-            "when": "view == projectView && viewItem == project",
-            "command": "stylusWorkspace.addToWorkspace",
-            "common": "common@1"
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.addToWorkspace",
+          "common": "common@1"
         }
       ]
+    },
+    "configuration": {
+      "title": "StylusGPT",
+      "properties": {
+        "StylusGPT.apiKey": {
+          "type": "string",
+          "default": "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",
+          "description": "Specifies the OpenAI API key to use."
+        }
+      }
     }
   },
+ 
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
@@ -170,14 +204,17 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",
-    "eslint": "^8.54.0",
-    "typescript": "^5.3.2",
     "@vscode/test-cli": "^0.0.4",
-    "@vscode/test-electron": "^2.3.8"
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "openai": "^4.26.0"
   }
 }

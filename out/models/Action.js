@@ -23,18 +23,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Project = void 0;
+exports.Action = void 0;
 const vscode = __importStar(require("vscode"));
-class Project extends vscode.TreeItem {
-    name;
-    path;
-    commands; // This should hold the command structure
-    constructor(name, path, commands) {
-        super(name, vscode.TreeItemCollapsibleState.Collapsed);
-        this.name = name;
-        this.path = path;
-        this.commands = commands;
+class Action extends vscode.TreeItem {
+    label;
+    actionCommand;
+    arguments;
+    constructor(label, actionCommand, args) {
+        super(label, vscode.TreeItemCollapsibleState.None);
+        this.label = label;
+        this.actionCommand = actionCommand;
+        this.arguments = args;
     }
 }
-exports.Project = Project;
-//# sourceMappingURL=Project.js.map
+exports.Action = Action;
+//# sourceMappingURL=Action.js.map

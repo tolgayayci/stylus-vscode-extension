@@ -11,6 +11,8 @@ import { traceHandler } from "./commands/trace";
 
 //Data Providers
 import { ProjectDataProvider } from "./dataProviders/ProjectDataProvider";
+import { ChatViewProvider } from "./dataProviders/ChatViewProvider";
+
 import { Project } from "./models/Project";
 
 //Utils
@@ -20,6 +22,13 @@ export function activate(context: vscode.ExtensionContext) {
   //Data Provider for the project view
   const projectDataProvider = new ProjectDataProvider(context);
   vscode.window.registerTreeDataProvider("projectView", projectDataProvider);
+
+  //Stylus GPT View
+  const chatViewProvider = new ChatViewProvider(context.extensionUri, context);
+  vscode.window.registerWebviewViewProvider(
+    ChatViewProvider.viewType,
+    chatViewProvider
+  );
 
   checkCargoStylus()
     .then(() => {
@@ -171,7 +180,5 @@ export function activate(context: vscode.ExtensionContext) {
         "stylusWorkspace.cargoStylusInstalled",
         false
       );
-
-      // Optionally, you can provide additional UI or notifications here to inform the user
     });
 }

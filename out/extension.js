@@ -35,12 +35,16 @@ const replay_1 = require("./commands/replay");
 const trace_1 = require("./commands/trace");
 //Data Providers
 const ProjectDataProvider_1 = require("./dataProviders/ProjectDataProvider");
+const ChatViewProvider_1 = require("./dataProviders/ChatViewProvider");
 //Utils
 const checkCargoStylus_1 = require("./utils/checkCargoStylus");
 function activate(context) {
     //Data Provider for the project view
     const projectDataProvider = new ProjectDataProvider_1.ProjectDataProvider(context);
     vscode.window.registerTreeDataProvider("projectView", projectDataProvider);
+    //Stylus GPT View
+    const chatViewProvider = new ChatViewProvider_1.ChatViewProvider(context.extensionUri, context);
+    vscode.window.registerWebviewViewProvider(ChatViewProvider_1.ChatViewProvider.viewType, chatViewProvider);
     (0, checkCargoStylus_1.checkCargoStylus)()
         .then(() => {
         // Command to create a new project
@@ -101,7 +105,6 @@ function activate(context) {
         console.error("Cargo Stylus is not installed: ", err);
         // You might want to set the context here as well to ensure the views are hidden
         vscode.commands.executeCommand("setContext", "stylusWorkspace.cargoStylusInstalled", false);
-        // Optionally, you can provide additional UI or notifications here to inform the user
     });
 }
 exports.activate = activate;

@@ -1,7 +1,14 @@
-export class Project {
+import * as vscode from "vscode";
+
+export class Project extends vscode.TreeItem {
+  commands: any; // This should hold the command structure
+
   constructor(
     public readonly name: string,
     public readonly path: string,
-    public readonly creationDate: Date
-  ) {}
+    commands: any
+  ) {
+    super(name, vscode.TreeItemCollapsibleState.Collapsed);
+    this.commands = commands;
+  }
 }
