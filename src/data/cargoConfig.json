@@ -1,146 +1,146 @@
 {
-    "export-abi": {
-        "options": {
-            "--release": {
-                "default": false,
-                "description": "Build in release mode"
-            },
-            "--output": {
-                "default": "stdout",
-                "description": "The Output file (defaults to stdout)"
-            },
-            "--json": {
-                "default": false,
-                "description": "Output a JSON ABI instead using solc. Requires solc."
-            }
-        }
-    },
-    "check": {
-        "options": {
-            "--endpoint": {
-                "default": "https://stylus-testnet.arbitrum.io/rpc",
-                "description": "RPC endpoint of the Stylus node to connect to"
-            },
-            "--wasm-file-path": {
-                "default": null,
-                "description": "Specifies a WASM file instead of looking for one in the current directory"
-            },
-            "--expected-program-address": {
-                "default": "0x0000000000000000000000000000000000000000",
-                "description": "Specify the program address we want to check activation for"
-            },
-            "--private-key-path": {
-                "default": null,
-                "description": "File path to a text file containing a private key"
-            },
-            "--private-key": {
-                "default": null,
-                "description": "Private key 0x-prefixed hex string"
-            },
-            "--keystore-path": {
-                "default": null,
-                "description": "Path to an Ethereum wallet keystore file"
-            },
-            "--keystore-password-path": {
-                "default": null,
-                "description": "Path to a text file containing a password to the specified wallet keystore file"
-            },
-            "--nightly": {
-                "default": false,
-                "description": "Whether to use Rust nightly"
-            }
-        }
-    },
-    "replay": {
-        "options": {
-            "--endpoint": {
-                "default": "http://localhost:8545",
-                "description": "RPC endpoint"
-            },
-            "--tx": {
-                "default": null,
-                "description": "Tx to replay"
-            },
-            "--project": {
-                "default": ".",
-                "description": "Project path"
-            },
-            "--stable-rust": {
-                "default": false,
-                "description": "Whether to use stable Rust. Note that nightly is needed to expand macros"
-            }
-        }
-    },
-    "trace": {
-        "options": {
-            "--endpoint": {
-                "default": "http://localhost:8545",
-                "description": "RPC endpoint"
-            },
-            "--tx": {
-                "default": null,
-                "description": "Tx to replay"
-            },
-            "--project": {
-                "default": ".",
-                "description": "Project path"
-            }
-        }
-    },
-    "deploy": {
-        "options": {
-            "--endpoint": {
-                "default": "https://stylus-testnet.arbitrum.io/rpc",
-                "description": "RPC endpoint of the Stylus node to connect to"
-            },
-            "--wasm-file-path": {
-                "default": null,
-                "description": "Specifies a WASM file instead of looking for one in the current directory"
-            },
-            "--expected-program-address": {
-                "default": "0x0000000000000000000000000000000000000000",
-                "description": "Specify the program address we want to check activation for"
-            },
-            "--private-key-path": {
-                "default": null,
-                "description": "File path to a text file containing a private key"
-            },
-            "--private-key": {
-                "default": null,
-                "description": "Private key 0x-prefixed hex string"
-            },
-            "--keystore-path": {
-                "default": null,
-                "description": "Path to an Ethereum wallet keystore file"
-            },
-            "--keystore-password-path": {
-                "default": null,
-                "description": "Path to a text file containing a password to the specified wallet keystore file"
-            },
-            "--nightly": {
-                "default": false,
-                "description": "Whether to use Rust nightly"
-            },
-            "--estimate-gas-only": {
-                "default": false,
-                "description": "Estimates deployment gas costs"
-            },
-            "--mode": {
-                "default": null,
-                "description": "Deployment mode options"
-            },
-            "--activate-program-address": {
-                "default": null,
-                "description": "Address of the program to send an activation tx for"
-            },
-            "--dry-run": {
-                "default": false,
-                "description": "Prepares transactions but does not send them"
-            },
-            "--output-tx-data-to-dir": {
-                "default": null,
-                "description": "Outputs the deployment / activation tx data as bytes to a specified directory"
-            }
-        }
+  "export-abi": {
+    "options": {
+      "--release": {
+        "default": false,
+        "description": "Build in release mode"
+      },
+      "--output": {
+        "default": "stdout",
+        "description": "The Output file (defaults to stdout)"
+      },
+      "--json": {
+        "default": false,
+        "description": "Output a JSON ABI instead using solc. Requires solc."
+      }
     }
+  },
+  "check": {
+    "options": {
+      "--endpoint": {
+        "default": "https://stylus-testnet.arbitrum.io/rpc",
+        "description": "RPC endpoint of the Stylus node to connect to"
+      },
+      "--wasm-file-path": {
+        "default": null,
+        "description": "Specifies a WASM file instead of looking for one in the current directory"
+      },
+      "--expected-program-address": {
+        "default": "0x0000000000000000000000000000000000000000",
+        "description": "Specify the program address we want to check activation for"
+      },
+      "--private-key-path": {
+        "default": null,
+        "description": "File path to a text file containing a private key"
+      },
+      "--private-key": {
+        "default": null,
+        "description": "Private key 0x-prefixed hex string"
+      },
+      "--keystore-path": {
+        "default": null,
+        "description": "Path to an Ethereum wallet keystore file"
+      },
+      "--keystore-password-path": {
+        "default": null,
+        "description": "Path to a text file containing a password to the specified wallet keystore file"
+      },
+      "--nightly": {
+        "default": false,
+        "description": "Whether to use Rust nightly"
+      }
+    }
+  },
+  "replay": {
+    "options": {
+      "--endpoint": {
+        "default": "http://localhost:8545",
+        "description": "RPC endpoint"
+      },
+      "--tx": {
+        "default": null,
+        "description": "Tx to replay"
+      },
+      "--project": {
+        "default": ".",
+        "description": "Project path"
+      },
+      "--stable-rust": {
+        "default": false,
+        "description": "Whether to use stable Rust. Note that nightly is needed to expand macros"
+      }
+    }
+  },
+  "trace": {
+    "options": {
+      "--endpoint": {
+        "default": "http://localhost:8545",
+        "description": "RPC endpoint"
+      },
+      "--tx": {
+        "default": null,
+        "description": "Tx to replay"
+      },
+      "--project": {
+        "default": ".",
+        "description": "Project path"
+      }
+    }
+  },
+  "deploy": {
+    "options": {
+      "--endpoint": {
+        "default": "https://stylus-testnet.arbitrum.io/rpc",
+        "description": "RPC endpoint of the Stylus node to connect to"
+      },
+      "--wasm-file-path": {
+        "default": null,
+        "description": "Specifies a WASM file instead of looking for one in the current directory"
+      },
+      "--expected-program-address": {
+        "default": "0x0000000000000000000000000000000000000000",
+        "description": "Specify the program address we want to check activation for"
+      },
+      "--private-key-path": {
+        "default": null,
+        "description": "File path to a text file containing a private key"
+      },
+      "--private-key": {
+        "default": null,
+        "description": "Private key 0x-prefixed hex string"
+      },
+      "--keystore-path": {
+        "default": null,
+        "description": "Path to an Ethereum wallet keystore file"
+      },
+      "--keystore-password-path": {
+        "default": null,
+        "description": "Path to a text file containing a password to the specified wallet keystore file"
+      },
+      "--nightly": {
+        "default": false,
+        "description": "Whether to use Rust nightly"
+      },
+      "--estimate-gas-only": {
+        "default": false,
+        "description": "Estimates deployment gas costs"
+      },
+      "--mode": {
+        "default": null,
+        "description": "Deployment mode options"
+      },
+      "--activate-program-address": {
+        "default": null,
+        "description": "Address of the program to send an activation tx for"
+      },
+      "--dry-run": {
+        "default": false,
+        "description": "Prepares transactions but does not send them"
+      },
+      "--output-tx-data-to-dir": {
+        "default": null,
+        "description": "Outputs the deployment / activation tx data as bytes to a specified directory"
+      }
+    }
+  }
 }

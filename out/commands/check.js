@@ -25,22 +25,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkHandler = void 0;
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const checkCargoStylus_1 = require("../utils/checkCargoStylus");
 const checkIsStylusProject_1 = require("../utils/checkIsStylusProject");
-function checkHandler(projectDataProvider, directProject) {
+function checkHandler(projectDataProvider, directProject, context) {
     (0, checkCargoStylus_1.checkCargoStylus)()
         .then(() => {
-        selectProjectFolderAndExecuteCheck(projectDataProvider, directProject);
+        const commandOptions = loadCommandOptions(context, "check");
+        selectProjectFolderAndExecuteCheck(projectDataProvider, commandOptions, directProject);
     })
         .catch((err) => {
-        vscode.window.showErrorMessage(`Cargo Stylus is not installed: ${err.message}`);
+        vscode.window.showErrorMessage(`Cargo Stylus is not installed or unknown error occured: ${err.message}`);
     });
 }
 exports.checkHandler = checkHandler;
-function selectProjectFolderAndExecuteCheck(projectDataProvider, directProject) {
+function selectProjectFolderAndExecuteCheck(projectDataProvider, commandOptions, directProject) {
     if (directProject) {
         // Directly execute check for the provided project
-        executeCargoStylusCheck(directProject.path);
+        executeCargoStylusCheck(directProject.path, commandOptions);
         return;
     }
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -52,7 +55,6 @@ function selectProjectFolderAndExecuteCheck(projectDataProvider, directProject) 
     }
     // Create a combined list of unique projects from workspace folders and ProjectDataProvider
     const combinedProjects = new Map();
-    // Add workspace folders to the combined list
     workspaceFolders?.forEach((folder) => {
         if ((0, checkIsStylusProject_1.checkIsStylusProject)(folder.uri.fsPath)) {
             combinedProjects.set(folder.uri.fsPath, {
@@ -87,7 +89,7 @@ function selectProjectFolderAndExecuteCheck(projectDataProvider, directProject) 
     }
     if (projectsArray.length === 1) {
         // Only one project, use it directly
-        executeCargoStylusCheck(projectsArray[0].folderPath);
+        executeCargoStylusCheck(projectsArray[0].folderPath, commandOptions);
     }
     else {
         // Multiple projects, ask the user to choose
@@ -97,47 +99,46 @@ function selectProjectFolderAndExecuteCheck(projectDataProvider, directProject) 
         })
             .then((selected) => {
             if (selected) {
-                executeCargoStylusCheck(selected.folderPath);
+                executeCargoStylusCheck(selected.folderPath, commandOptions);
             }
         });
     }
 }
-async function collectOptionsAndExecute(folderPath) {
+async function collectOptionsAndExecute(folderPath, commandOptions) {
     let options = "";
-    // Endpoint option
-    const endpoint = await askForInput("Enter RPC endpoint of the Stylus node (leave blank for default)", "https://stylus-testnet.arbitrum.io/rpc");
-    if (endpoint)
-        options += ` --endpoint "${endpoint}"`;
-    // WASM file path
-    const wasmFilePath = await askForInput("Enter the WASM file path (leave blank if not applicable)");
-    if (wasmFilePath)
-        options += ` --wasm-file-path "${wasmFilePath}"`;
-    // Expected program address
-    const expectedProgramAddress = await askForInput("Enter the expected program address (leave blank for default)", "0x0000000000000000000000000000000000000000");
-    if (expectedProgramAddress)
-        options += ` --expected-program-address "${expectedProgramAddress}"`;
-    // Private key path
-    const privateKeyPath = await askForInput("Enter the private key path (leave blank if not applicable)");
-    if (privateKeyPath)
-        options += ` --private-key-path "${privateKeyPath}"`;
-    // Private key
-    const privateKey = await askForInput("Enter the private key (leave blank if not applicable)");
-    if (privateKey)
-        options += ` --private-key "${privateKey}"`;
-    // Keystore path
-    const keystorePath = await askForInput("Enter the keystore path (leave blank if not applicable)");
-    if (keystorePath)
-        options += ` --keystore-path "${keystorePath}"`;
-    // Keystore password path
-    const keystorePasswordPath = await askForInput("Enter the keystore password path (leave blank if not applicable)");
-    if (keystorePasswordPath)
-        options += ` --keystore-password-path "${keystorePasswordPath}"`;
-    // Nightly flag
-    const useNightly = await vscode.window.showQuickPick(["Yes", "No"], {
-        placeHolder: "Use Rust nightly?",
-    });
-    if (useNightly === "Yes")
-        options += " --nightly";
+    for (const [optionKey, optionValue] of Object.entries(commandOptions)) {
+        // Handle boolean options with a QuickPick
+        if (typeof optionValue.default === "boolean") {
+            if (optionValue.default) {
+                options += ` ${optionKey}`;
+            }
+            else {
+                const enableFlag = await vscode.window.showQuickPick(["Yes", "No"], {
+                    placeHolder: `Enable ${optionKey}? (${optionValue.description})`,
+                });
+                if (enableFlag === "Yes") {
+                    options += ` ${optionKey}`;
+                }
+                else if (enableFlag === undefined) {
+                    // Cancellation
+                    return; // Exit the function early
+                }
+            }
+        }
+        else if (optionValue.default !== null) {
+            const userValue = await askForInput(optionValue.description, optionValue.default.toString());
+            if (userValue !== undefined) {
+                // Ensure it's not a cancellation
+                options += ` ${optionKey} "${userValue}"`;
+            }
+            else {
+                return; // User cancelled the input
+            }
+        }
+        else {
+            console.warn(`Option "${optionKey}" has no default value, and is not handled.`);
+        }
+    }
     runCargoStylusCheck(folderPath, options);
 }
 async function askForInput(prompt, defaultValue) {
@@ -146,23 +147,42 @@ async function askForInput(prompt, defaultValue) {
         value: defaultValue,
     });
 }
+function loadCommandOptions(context, commandName) {
+    // Construct the file path using the extension context's extensionPath
+    const filePath = path.join(context.extensionPath, "src/data/cargoConfig.json");
+    try {
+        const rawData = fs.readFileSync(filePath);
+        const config = JSON.parse(rawData.toString());
+        // Dynamically select the command options based on the commandName parameter
+        const commandConfig = config[commandName];
+        if (!commandConfig || !commandConfig.options) {
+            throw new Error(`Command options for '${commandName}' not found.`);
+        }
+        return commandConfig.options;
+    }
+    catch (error) {
+        console.error("Error loading command options:", error);
+        throw new Error(`Failed to load command options for '${commandName}': ${error}`);
+    }
+}
 function runCargoStylusCheck(folderPath, options) {
     const terminal = vscode.window.createTerminal(`Stylus Check: ${folderPath}`);
     terminal.show();
     terminal.sendText(`cd "${folderPath}" && cargo stylus check ${options}`);
 }
-function executeCargoStylusCheck(folderPath) {
+function executeCargoStylusCheck(folderPath, commandOptions) {
     vscode.window
         .showQuickPick(["Yes", "No"], {
         placeHolder: "Do you want to add options?",
     })
         .then((answer) => {
         if (answer === "Yes") {
-            collectOptionsAndExecute(folderPath);
+            collectOptionsAndExecute(folderPath, commandOptions);
         }
-        else {
+        else if (answer === "No") {
             runCargoStylusCheck(folderPath, "");
         }
+        // If answer is undefined (Esc was pressed), do nothing
     });
 }
 //# sourceMappingURL=check.js.map

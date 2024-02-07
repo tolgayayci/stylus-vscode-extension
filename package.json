@@ -2,7 +2,7 @@
   "name": "stylus",
   "displayName": "Stylus",
   "description": "Arbitrum Stylus Vscode Extension",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -38,10 +38,7 @@
       },
       {
         "command": "stylusWorkspace.check",
-        "title": "Stylus (Cargo): Check",
-        "views": {
-          "cargoStylus": true
-        }
+        "title": "Stylus (Cargo): Check"
       },
       {
         "command": "stylusWorkspace.deploy",
@@ -54,6 +51,11 @@
       {
         "command": "stylusWorkspace.trace",
         "title": "Stylus (Cargo): Trace"
+      },
+      {
+        "command": "stylusWorkspace.openStylusJson",
+        "title": "Stylus (Cargo): Edit Config",
+        "icon": "$(edit)"
       },
       {
         "command": "stylusWorkspace.openProject",
@@ -72,12 +74,16 @@
         "title": "Add to Workspace"
       },
       {
-        "command": "stylusWorkspace.showCommandOptions",
-        "title": "Options"
+        "command": "stylusGpt.explain",
+        "title": "StylusGPT: Explain"
       },
       {
-        "command": "stylusWorkspace.showInputBoxes",
-        "title": "Show Input Boxes"
+        "command": "stylusGpt.refactor",
+        "title": "StylusGPT: Refactor"
+      },
+      {
+        "command": "stylusGpt.findProblems",
+        "title": "StylusGPT: Find Problems"
       }
     ],
     "snippets": [
@@ -89,8 +95,18 @@
     "viewsWelcome": [
       {
         "view": "projectView",
+        "contents": "Cargo Stylus is not installed. Please install it to use this extension at full functionality.\n[Install Cargo Stylus](https://github.com/OffchainLabs/cargo-stylus)",
+        "when": "stylusWorkspace.cargoStylusInstalled == false"
+      },
+      {
+        "view": "projectView",
         "contents": "In order to use this extension you need to create a new stylus project or add existing one.\n[Create New Stylus Project](command:stylusWorkspace.createNewProject)\n[Add Existing One](command:stylusWorkspace.addExistingProject)\nTo learn more about how to use Stylus in VS Code [read extension docs](https://github.com/tolgayayci/stylus-vscode-extension).",
-        "when": "workbenchState !== empty"
+        "when": "stylusWorkspace.cargoStylusInstalled == true"
+      },
+      {
+        "view": "chatView",
+        "contents": "Please configure your StylusGPT API key to start using Chat with Stylus GPT.\n[Configure API Key](command:workbench.action.openSettings?\"StylusGPT.apiKey\")",
+        "when": "stylusGptApiKeySet == false"
       }
     ],
     "viewsContainers": {
@@ -106,14 +122,13 @@
       "stylusWorkspace": [
         {
           "id": "projectView",
-          "name": "Projects",
-          "icon": "media/project-icon.svg"
+          "name": "Projects"
         },
         {
           "type": "webview",
           "id": "chatView",
           "name": "Chat with Stylus GPT",
-          "canMoveView": true
+          "canMoveView": false
         }
       ]
     },
@@ -153,6 +168,11 @@
         },
         {
           "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openStylusJson",
+          "group": "inline"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
           "command": "stylusWorkspace.exportAbi",
           "group": "stylus@1"
         },
@@ -178,8 +198,30 @@
         },
         {
           "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openStylusJson",
+          "group": "stylus@6"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
           "command": "stylusWorkspace.addToWorkspace",
           "common": "common@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "stylusGpt.explain",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@1"
+        },
+        {
+          "command": "stylusGpt.refactor",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@2"
+        },
+        {
+          "command": "stylusGpt.findProblems",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@3"
         }
       ]
     },
@@ -188,13 +230,12 @@
       "properties": {
         "StylusGPT.apiKey": {
           "type": "string",
-          "default": "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",
+          "default": "",
           "description": "Specifies the OpenAI API key to use."
         }
       }
     }
   },
- 
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",

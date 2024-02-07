@@ -43,16 +43,27 @@ function createNewProjectHandler(projectDataProvider) {
                     openLabel: "Select Project Folder",
                 })
                     .then((folderUri) => {
-                    if (folderUri && folderUri[0]) {
+                    if (folderUri && folderUri.length > 0) {
                         const projectPath = folderUri[0].fsPath;
-                        childProcess.exec(`cargo stylus new ${projectName}`, { cwd: projectPath }, (err, stdout, stderr) => {
-                            if (err) {
-                                vscode.window.showErrorMessage(`Failed to create project: ${err.message}`);
-                            }
-                            else {
-                                projectDataProvider.addProject(new Project_1.Project(projectName, projectPath, new Date()));
-                                vscode.window.showInformationMessage(`Project ${projectName} created at ${projectPath}`);
-                            }
+                        // Display progress notification
+                        vscode.window.withProgress({
+                            location: vscode.ProgressLocation.Notification,
+                            title: `Creating project "${projectName}"...`,
+                            cancellable: false,
+                        }, () => {
+                            return new Promise((resolve, reject) => {
+                                childProcess.exec(`cargo stylus new ${projectName}`, { cwd: projectPath }, (err, stdout, stderr) => {
+                                    if (err) {
+                                        vscode.window.showErrorMessage(`Failed to create project: ${err.message}`);
+                                        reject();
+                                    }
+                                    else {
+                                        projectDataProvider.addProject(new Project_1.Project(projectName, projectPath, new Date()));
+                                        vscode.window.showInformationMessage(`Project "${projectName}" created at ${projectPath}`);
+                                        resolve();
+                                    }
+                                });
+                            });
                         });
                     }
                 });

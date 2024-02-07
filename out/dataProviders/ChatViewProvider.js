@@ -22,13 +22,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatViewProvider = void 0;
 const vscode = __importStar(require("vscode"));
-const openai_1 = __importDefault(require("openai"));
 class ChatViewProvider {
     _extensionUri;
     static viewType = "chatView";
@@ -40,10 +36,10 @@ class ChatViewProvider {
     constructor(_extensionUri, context) {
         this._extensionUri = _extensionUri;
         this.context = context;
-        this.openai = new openai_1.default({
-            apiKey: vscode.workspace.getConfiguration().get("StylusGPT.apiKey"),
-        });
-        this.initializeAssistant().then(() => this.initializeThread());
+        // this.openai = new OpenAI({
+        //   apiKey: vscode.workspace.getConfiguration().get("StylusGPT.apiKey"),
+        // });
+        // this.initializeAssistant().then(() => this.initializeThread());
     }
     async initializeAssistant() {
         let assistantId = this.context.globalState.get("assistantId");
@@ -65,6 +61,17 @@ class ChatViewProvider {
         }
         else {
             console.log("Using existing assistant ID", assistantId);
+            try {
+                const myAssistant = await this.openai.beta.assistants.retrieve(assistantId);
+                if (myAssistant.id) {
+                    console.log("Assistant retrieved", myAssistant);
+                }
+            }
+            catch (error) {
+                console.log("Error retrieving assistant, creating a new one", error);
+                this.context.globalState.update("assistantId", null);
+                await this.initializeAssistant();
+            }
         }
     }
     async initializeThread() {
@@ -96,6 +103,42 @@ class ChatViewProvider {
             vscode.window.showErrorMessage(`Error initializing thread: ${error}`);
         }
     }
+    handleSelectedText(action, selectedText) {
+        if (this._view) {
+            // If the webview is already created, reveal (focus) it
+            this._view.show(true); // `true` to give it focus
+            // Format the selected text as a Markdown code block
+            const codeBlock = `\`\`\`\n${selectedText}\n\`\`\``;
+            let prompt = "";
+            // Determine the prompt based on the action
+            switch (action) {
+                case "Explain":
+                    prompt = "Please explain the following code:\n";
+                    break;
+                case "Refactor":
+                    prompt =
+                        "Please refactor the following code for better readability and efficiency:\n";
+                    break;
+                case "FindProblems":
+                    prompt =
+                        "Please identify any problems or errors in the following code:\n";
+                    break;
+                default:
+                    console.warn("Unknown action.");
+                    return;
+            }
+            // Combine the prompt with the code block
+            const query = `${prompt}${codeBlock}`;
+            this._view?.webview.postMessage({
+                type: "query",
+                text: query,
+            });
+        }
+        else {
+            console.warn("Webview is not initialized.");
+            // Here, you may choose to initialize the webview if necessary
+        }
+    }
     async handleQuery(query) {
         const assistantId = this.context.globalState.get("assistantId");
         if (!this.threadId || !assistantId) {
@@ -124,33 +167,46 @@ class ChatViewProvider {
             while (status !== "completed") {
                 const newrun = await this.openai.beta.threads.runs.retrieve(run.thread_id, run.id);
                 await delay(2000);
+                console.log("Run status", newrun.status);
                 status = newrun.status;
+                if (status === "failed") {
+                    this._view?.webview.postMessage({
+                        type: "response",
+                        text: "There is an error while retrieving response. Please try again later.",
+                    });
+                    break;
+                }
             }
-            console.log("Run completed");
-            const messagesResponse = await this.openai.beta.threads.messages.list(this.threadId);
-            console.log("Messages retrieved", messagesResponse.data);
-            if (messagesResponse.data.length > 0) {
-                // Get the first message from the response
-                const firstMessage = messagesResponse.data[0];
-                // Extract the text content from the first message
-                const firstMessageText = firstMessage.content
-                    .map((contentItem) => {
-                    if ("text" in contentItem && contentItem.type === "text") {
-                        return contentItem.text.value;
-                    }
-                    return "";
-                })
-                    .join("\n");
-                // Create a message response with the first message
-                console.log("First message text", firstMessageText);
-                // Send the message response to the webview
-                this._view?.webview.postMessage({
-                    type: "response",
-                    text: firstMessageText,
-                });
+            if (status === "completed") {
+                console.log("Run completed");
+                const messagesResponse = await this.openai.beta.threads.messages.list(this.threadId);
+                console.log("Messages retrieved", messagesResponse.data);
+                if (messagesResponse.data.length > 0) {
+                    // Get the first message from the response
+                    const firstMessage = messagesResponse.data[0];
+                    // Extract the text content from the first message
+                    const firstMessageText = firstMessage.content
+                        .map((contentItem) => {
+                        if ("text" in contentItem && contentItem.type === "text") {
+                            return contentItem.text.value;
+                        }
+                        return "";
+                    })
+                        .join("\n");
+                    // Create a message response with the first message
+                    console.log("First message text", firstMessageText);
+                    // Send the message response to the webview
+                    this._view?.webview.postMessage({
+                        type: "response",
+                        text: firstMessageText,
+                    });
+                }
+            }
+            else if (status === "failed") {
+                vscode.window.showErrorMessage("The process has failed. Please try again later.");
             }
             else {
-                console.log("No messages to display");
+                console.log("Unknown error occurred");
             }
         }
         catch (error) {
@@ -177,63 +233,41 @@ class ChatViewProvider {
     }
     getHtmlForWebview(webview) {
         const scriptSource = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "scripts", "main.js"));
-        const tailwindSource = "https://cdn.tailwindcss.com";
+        const tailwindSource = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "scripts", "helper", "tailwind.min.js"));
+        const showdownSource = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "scripts", "helper", "showdown.min.js"));
+        const microlightSource = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "src", "scripts", "helper", "microlight.min.js"));
         return `<!DOCTYPE html>
             <html lang="en">
               <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0-beta.1/dist/tailwind.min.css" rel="stylesheet">
+                <script src="${tailwindSource}"></script>
+                <script src="${showdownSource}"></script>
+                <script src="${microlightSource}"></script>
                 <style>
                   body, html {
                     height: 100%;
                     margin: 0;
                     padding: 0;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                  }
-                  #chat-container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
+                    font-family: -apple-system,BlinkMacSystemFont,sans-serif;
                   }
                   #chat {
                     flex-grow: 1;
                     overflow-y: auto;
-                    padding: 10px;
                     margin-bottom: 44px;
                   }
-                  .input-bar {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0; 
-                    width: 100%; 
-                    padding: 12px 8px;
-                  }
-                  .input-bar input {
-                    width: calc(100% - 34px); 
-                    padding: 10px;
-                    border-radius: 20px;
-                    border: none;
-                    font-size: 16px;
-                    color: #fff;
-                    background-color: #7f8c8d; 
-                  }
                   .message {
-                    display: flex;
                     align-items: center;
-                    margin: 5px;
-                    padding: 10px;
-                    border-radius: 18px;
-                    color: white;
-                    font-size: 0.9rem;
+                    padding-bottom: 12px;
+                    border-bottom: 1px solid var(--vscode-chat-requestBorder);
+                    padding: 20px;
+                    font-family: -apple-system,BlinkMacSystemFont,sans-serif;
                   }
                   .user {
                     align-self: flex-end;
-                    background-color: #0984e3; /* Blue for user */
                   }
                   .assistant {
                     align-self: flex-start;
-                    background-color: #636e72; /* Gray for AI */
                   }
                   .icon {
                     width: 20px;
@@ -241,6 +275,7 @@ class ChatViewProvider {
                     margin-right: 8px;
                   }
                   .loader {
+                    margin-top: 12px;
                     border: 4px solid #f3f3f3; /* Light grey */
                     border-top: 4px solid #3498db; /* Blue */
                     border-radius: 50%;
@@ -250,6 +285,14 @@ class ChatViewProvider {
                     margin-left: auto;
                     margin-right: auto;
                   }
+                  .message-header {
+                    display: flex;
+                    align-items: center;
+                    font-weight: bold;
+                  }
+                  .icon-text {
+                    margin-bottom: 8px;
+                  }
                   @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
@@ -257,16 +300,14 @@ class ChatViewProvider {
                 </style>
               </head>
               <body>
-                <div id="chat-container">
-                  <div id="chat" class="chat">
-                    <!-- Messages will be dynamically inserted here -->
+                <div class="flex flex-col h-screen">
+                  <div id="chat" class="flex-1 overflow-y-auto">
+                    <!-- Chat messages go here -->
                   </div>
-                  <div class="input-bar">
-                    <input type="text" id="prompt-input" placeholder="Ask Copilot or type / for commands" />
+                  <div class="fixed bottom-0 w-full">
+                    <input class="h-10 w-full text-white p-4 text-sm" placeholder="Ask Stylus GPT something" type="text" id="prompt-input" />
                   </div>
-                </div>
-              
-                <!-- Include your script source here -->
+                </div>            
                 <script src="${scriptSource}"></script>
               </body>
             </html>        

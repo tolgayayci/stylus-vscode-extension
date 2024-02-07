@@ -1,34 +1,44 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
+
 import { checkCargoStylus } from "../utils/checkCargoStylus";
 import { checkIsStylusProject } from "../utils/checkIsStylusProject";
-import { Project } from "../models/Project";
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
+import { Project, CommandOptions } from "../models/Project";
 
 export function exportAbiHandler(
   projectDataProvider: ProjectDataProvider,
-  directProject?: Project
+  directProject?: Project,
+  context?: vscode.ExtensionContext
 ) {
   checkCargoStylus()
     .then(() => {
+      const commandOptions = loadCommandOptions(
+        context as vscode.ExtensionContext,
+        "export-abi"
+      );
       selectProjectFolderAndExecuteExportAbi(
         projectDataProvider,
+        commandOptions,
         directProject
       );
     })
     .catch((err) => {
       vscode.window.showErrorMessage(
-        `Cargo Stylus is not installed: ${err.message}`
+        `Cargo Stylus is not installed or unknown error occured: ${err.message}`
       );
     });
 }
 
 function selectProjectFolderAndExecuteExportAbi(
   projectDataProvider: ProjectDataProvider,
+  commandOptions: CommandOptions,
   directProject?: Project
 ) {
   if (directProject) {
     // Directly execute check for the provided project
-    executeCargoStylusExportAbi(directProject.path);
+    executeCargoStylusExportAbi(directProject.path, commandOptions);
     return;
   }
 
@@ -89,7 +99,7 @@ function selectProjectFolderAndExecuteExportAbi(
 
   if (projectsArray.length === 1) {
     // Only one project, use it directly
-    executeCargoStylusExportAbi(projectsArray[0].folderPath);
+    executeCargoStylusExportAbi(projectsArray[0].folderPath, commandOptions);
   } else {
     // Multiple projects, ask the user to choose
     vscode.window
@@ -98,56 +108,53 @@ function selectProjectFolderAndExecuteExportAbi(
       })
       .then((selected) => {
         if (selected) {
-          executeCargoStylusExportAbi(selected.folderPath);
+          executeCargoStylusExportAbi(selected.folderPath, commandOptions);
         }
       });
   }
 }
 
-async function collectExportAbiOptionsAndExecute(folderPath: string) {
+async function collectExportAbiOptionsAndExecute(
+  folderPath: string,
+  commandOptions: CommandOptions
+) {
   let options = "";
 
-  // Release option
-  const useRelease = await vscode.window.showQuickPick(["Yes", "No"], {
-    placeHolder: "Build in release mode?",
-  });
-  if (useRelease === "Yes") options += " --release";
-
-  // Output file
-  const outputFile = await askForInput(
-    "Enter the output file path (leave blank for stdout)"
-  );
-  if (outputFile) options += ` --output "${outputFile}"`;
-
-  // JSON option
-  const useJson = await vscode.window.showQuickPick(["Yes", "No"], {
-    placeHolder: "Output a JSON ABI using solc?",
-  });
-  if (useJson === "Yes") options += " --json";
+  for (const [optionKey, optionValue] of Object.entries(commandOptions)) {
+    // Handle boolean options with a QuickPick
+    if (typeof optionValue.default === "boolean") {
+      if (optionValue.default) {
+        options += ` ${optionKey}`;
+      } else {
+        const enableFlag = await vscode.window.showQuickPick(["Yes", "No"], {
+          placeHolder: `Enable ${optionKey}? (${optionValue.description})`,
+        });
+        if (enableFlag === "Yes") {
+          options += ` ${optionKey}`;
+        } else if (enableFlag === undefined) {
+          // Cancellation
+          return; // Exit the function early
+        }
+      }
+    } else if (optionValue.default !== null) {
+      const userValue = await askForInput(
+        optionValue.description,
+        optionValue.default.toString()
+      );
+      if (userValue !== undefined) {
+        // Ensure it's not a cancellation
+        options += ` ${optionKey} "${userValue}"`;
+      } else {
+        return; // User cancelled the input
+      }
+    } else {
+      console.warn(
+        `Option "${optionKey}" has no default value, and is not handled.`
+      );
+    }
+  }
 
   runCargoStylusExportAbi(folderPath, options);
-}
-
-function runCargoStylusExportAbi(folderPath: string, options: string) {
-  const terminal = vscode.window.createTerminal(
-    `Stylus: Export ABI: ${folderPath}`
-  );
-  terminal.show();
-  terminal.sendText(`cd "${folderPath}" && cargo stylus export-abi ${options}`);
-}
-
-function executeCargoStylusExportAbi(folderPath: string) {
-  vscode.window
-    .showQuickPick(["Yes", "No"], {
-      placeHolder: "Do you want to add options?",
-    })
-    .then((answer) => {
-      if (answer === "Yes") {
-        collectExportAbiOptionsAndExecute(folderPath);
-      } else {
-        runCargoStylusExportAbi(folderPath, "");
-      }
-    });
 }
 
 async function askForInput(
@@ -158,4 +165,57 @@ async function askForInput(
     prompt: prompt,
     value: defaultValue,
   });
+}
+
+function loadCommandOptions(
+  context: vscode.ExtensionContext,
+  commandName: string
+): CommandOptions {
+  // Construct the file path using the extension context's extensionPath
+  const filePath = path.join(
+    context.extensionPath,
+    "src/data/cargoConfig.json"
+  );
+
+  try {
+    const rawData = fs.readFileSync(filePath);
+    const config = JSON.parse(rawData.toString());
+    // Dynamically select the command options based on the commandName parameter
+    const commandConfig = config[commandName];
+    if (!commandConfig || !commandConfig.options) {
+      throw new Error(`Command options for '${commandName}' not found.`);
+    }
+    return commandConfig.options;
+  } catch (error) {
+    console.error("Error loading command options:", error);
+    throw new Error(
+      `Failed to load command options for '${commandName}': ${error}`
+    );
+  }
+}
+
+function runCargoStylusExportAbi(folderPath: string, options: string) {
+  const terminal = vscode.window.createTerminal(
+    `Stylus: Export ABI: ${folderPath}`
+  );
+  terminal.show();
+  terminal.sendText(`cd "${folderPath}" && cargo stylus export-abi ${options}`);
+}
+
+function executeCargoStylusExportAbi(
+  folderPath: string,
+  commandOptions: CommandOptions
+) {
+  vscode.window
+    .showQuickPick(["Yes", "No"], {
+      placeHolder: "Do you want to add options?",
+    })
+    .then((answer) => {
+      if (answer === "Yes") {
+        collectExportAbiOptionsAndExecute(folderPath, commandOptions);
+      } else if (answer === "No") {
+        runCargoStylusExportAbi(folderPath, "");
+      }
+      // If answer is undefined (Esc was pressed), do nothing
+    });
 }

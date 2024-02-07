@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 
 //Commands
 import { createNewProjectHandler } from "./commands/createNewProject";
@@ -71,35 +72,35 @@ export function activate(context: vscode.ExtensionContext) {
       let disposableExportApi = vscode.commands.registerCommand(
         "stylusWorkspace.exportAbi",
         (project: Project) => {
-          exportAbiHandler(projectDataProvider, project);
+          exportAbiHandler(projectDataProvider, project, context);
         }
       );
 
       let disposableCheck = vscode.commands.registerCommand(
         "stylusWorkspace.check",
         (project: Project) => {
-          checkHandler(projectDataProvider, project);
+          checkHandler(projectDataProvider, project, context);
         }
       );
 
       let disposableDeploy = vscode.commands.registerCommand(
         "stylusWorkspace.deploy",
         (project: Project) => {
-          deployHandler(projectDataProvider, project);
+          deployHandler(projectDataProvider, project, context);
         }
       );
 
       let disposableReplay = vscode.commands.registerCommand(
         "stylusWorkspace.replay",
         (project: Project) => {
-          replayHandler(projectDataProvider, project);
+          replayHandler(projectDataProvider, project, context);
         }
       );
 
       let disposableTrace = vscode.commands.registerCommand(
         "stylusWorkspace.trace",
         (project: Project) => {
-          traceHandler(projectDataProvider, project);
+          traceHandler(projectDataProvider, project, context);
         }
       );
 
@@ -146,6 +147,55 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
+      function handleEditorCommand(action: string) {
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+          const selectedText = activeEditor.document.getText(
+            activeEditor.selection
+          );
+          if (selectedText) {
+            chatViewProvider.handleSelectedText(action, selectedText);
+          } else {
+            vscode.window.showInformationMessage("No text selected.");
+          }
+        }
+      }
+
+      let disposableStylusGptExplain = vscode.commands.registerCommand(
+        "stylusGpt.explain",
+        () => {
+          handleEditorCommand("Explain");
+        }
+      );
+
+      let disposableStylusGptRefactor = vscode.commands.registerCommand(
+        "stylusGpt.refactor",
+        () => {
+          handleEditorCommand("Refactor");
+        }
+      );
+
+      let disposableStylusGptFindProblems = vscode.commands.registerCommand(
+        "stylusGpt.findProblems",
+        () => {
+          handleEditorCommand("FindProblems");
+        }
+      );
+
+      let disposableStylusJson = vscode.commands.registerCommand(
+        "stylusWorkspace.openStylusJson",
+        async () => {
+          const filePath = path.join(
+            context.extensionPath,
+            "src/data/cargoConfig.json"
+          );
+          const doc = await vscode.workspace.openTextDocument(
+            vscode.Uri.file(filePath)
+          ); // Use the file path
+          vscode.window.showTextDocument(doc);
+        }
+      );
+
       // Register the commands and subscriptions
       context.subscriptions.push(
         disposableCreateProject,
@@ -160,7 +210,11 @@ export function activate(context: vscode.ExtensionContext) {
         disposableOpenFolder,
         disposableOpenProjectInNewWindow,
         disposableRevealInFinder,
-        disposableAddToWorkspace
+        disposableAddToWorkspace,
+        disposableStylusGptExplain,
+        disposableStylusGptRefactor,
+        disposableStylusGptFindProblems,
+        disposableStylusJson
       );
 
       // You can also update the context here, if needed

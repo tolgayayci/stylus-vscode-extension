@@ -25,6 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
+const path = __importStar(require("path"));
 //Commands
 const createNewProject_1 = require("./commands/createNewProject");
 const addExistingProject_1 = require("./commands/addExistingProject");
@@ -64,19 +65,19 @@ function activate(context) {
             }
         });
         let disposableExportApi = vscode.commands.registerCommand("stylusWorkspace.exportAbi", (project) => {
-            (0, exportAbi_1.exportAbiHandler)(projectDataProvider, project);
+            (0, exportAbi_1.exportAbiHandler)(projectDataProvider, project, context);
         });
         let disposableCheck = vscode.commands.registerCommand("stylusWorkspace.check", (project) => {
-            (0, check_1.checkHandler)(projectDataProvider, project);
+            (0, check_1.checkHandler)(projectDataProvider, project, context);
         });
         let disposableDeploy = vscode.commands.registerCommand("stylusWorkspace.deploy", (project) => {
-            (0, deploy_1.deployHandler)(projectDataProvider, project);
+            (0, deploy_1.deployHandler)(projectDataProvider, project, context);
         });
         let disposableReplay = vscode.commands.registerCommand("stylusWorkspace.replay", (project) => {
-            (0, replay_1.replayHandler)(projectDataProvider, project);
+            (0, replay_1.replayHandler)(projectDataProvider, project, context);
         });
         let disposableTrace = vscode.commands.registerCommand("stylusWorkspace.trace", (project) => {
-            (0, trace_1.traceHandler)(projectDataProvider, project);
+            (0, trace_1.traceHandler)(projectDataProvider, project, context);
         });
         let disposableOpenFolder = vscode.commands.registerCommand("stylusWorkspace.openProject", (project) => {
             vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(project.path), false // This should be false for opening in the same window
@@ -95,8 +96,34 @@ function activate(context) {
                 ? vscode.workspace.workspaceFolders.length
                 : 0, null, { uri });
         });
+        function handleEditorCommand(action) {
+            const activeEditor = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                const selectedText = activeEditor.document.getText(activeEditor.selection);
+                if (selectedText) {
+                    chatViewProvider.handleSelectedText(action, selectedText);
+                }
+                else {
+                    vscode.window.showInformationMessage("No text selected.");
+                }
+            }
+        }
+        let disposableStylusGptExplain = vscode.commands.registerCommand("stylusGpt.explain", () => {
+            handleEditorCommand("Explain");
+        });
+        let disposableStylusGptRefactor = vscode.commands.registerCommand("stylusGpt.refactor", () => {
+            handleEditorCommand("Refactor");
+        });
+        let disposableStylusGptFindProblems = vscode.commands.registerCommand("stylusGpt.findProblems", () => {
+            handleEditorCommand("FindProblems");
+        });
+        let disposableStylusJson = vscode.commands.registerCommand("stylusWorkspace.openStylusJson", async () => {
+            const filePath = path.join(context.extensionPath, "src/data/cargoConfig.json");
+            const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath)); // Use the file path
+            vscode.window.showTextDocument(doc);
+        });
         // Register the commands and subscriptions
-        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableOpenProject, disposableRemoveProjectFromView, disposableExportApi, disposableCheck, disposableDeploy, disposableReplay, disposableTrace, disposableOpenFolder, disposableOpenProjectInNewWindow, disposableRevealInFinder, disposableAddToWorkspace);
+        context.subscriptions.push(disposableCreateProject, disposableAddExistingProject, disposableOpenProject, disposableRemoveProjectFromView, disposableExportApi, disposableCheck, disposableDeploy, disposableReplay, disposableTrace, disposableOpenFolder, disposableOpenProjectInNewWindow, disposableRevealInFinder, disposableAddToWorkspace, disposableStylusGptExplain, disposableStylusGptRefactor, disposableStylusGptFindProblems, disposableStylusJson);
         // You can also update the context here, if needed
         vscode.commands.executeCommand("setContext", "stylusWorkspace.cargoStylusInstalled", true);
     })

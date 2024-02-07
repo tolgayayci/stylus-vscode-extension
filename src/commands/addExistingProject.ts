@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
 import { Project } from "../models/Project"; // Ensure that Project is properly imported
 import { checkIsStylusProject } from "../utils/checkIsStylusProject";

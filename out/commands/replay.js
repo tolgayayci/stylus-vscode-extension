@@ -25,22 +25,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.replayHandler = void 0;
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const checkCargoStylus_1 = require("../utils/checkCargoStylus");
 const checkIsStylusProject_1 = require("../utils/checkIsStylusProject");
-function replayHandler(projectDataProvider, directProject) {
+function replayHandler(projectDataProvider, directProject, context) {
     (0, checkCargoStylus_1.checkCargoStylus)()
         .then(() => {
-        selectProjectFolderAndExecuteReplay(projectDataProvider, directProject);
+        const commandOptions = loadCommandOptions(context, "replay");
+        selectProjectFolderAndExecuteReplay(projectDataProvider, commandOptions, directProject);
     })
         .catch((err) => {
-        vscode.window.showErrorMessage(`Cargo Stylus is not installed: ${err.message}`);
+        vscode.window.showErrorMessage(`Cargo Stylus is not installed or unknown error occured: ${err.message}`);
     });
 }
 exports.replayHandler = replayHandler;
-function selectProjectFolderAndExecuteReplay(projectDataProvider, directProject) {
+function selectProjectFolderAndExecuteReplay(projectDataProvider, commandOptions, directProject) {
     if (directProject) {
         // Directly execute check for the provided project
-        executeCargoStylusReplay(directProject.path);
+        executeCargoStylusReplay(directProject.path, commandOptions);
         return;
     }
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -87,7 +90,7 @@ function selectProjectFolderAndExecuteReplay(projectDataProvider, directProject)
     }
     if (projectsArray.length === 1) {
         // Only one project, use it directly
-        executeCargoStylusReplay(projectsArray[0].folderPath);
+        executeCargoStylusReplay(projectsArray[0].folderPath, commandOptions);
     }
     else {
         // Multiple projects, ask the user to choose
@@ -97,34 +100,46 @@ function selectProjectFolderAndExecuteReplay(projectDataProvider, directProject)
         })
             .then((selected) => {
             if (selected) {
-                executeCargoStylusReplay(selected.folderPath);
+                executeCargoStylusReplay(selected.folderPath, commandOptions);
             }
         });
     }
 }
-async function collectReplayOptionsAndExecute(folderPath) {
+async function collectReplayOptionsAndExecute(folderPath, commandOptions) {
     let options = "";
-    // Endpoint option
-    const endpoint = await askForInput("Enter RPC endpoint (leave blank for default)", "http://localhost:8545");
-    if (endpoint)
-        options += ` --endpoint "${endpoint}"`;
-    // Tx to replay
-    const tx = await askForInput("Enter Tx to replay", "");
-    if (!tx) {
-        vscode.window.showErrorMessage("Transaction ID is required for replay.");
-        return;
+    for (const [optionKey, optionValue] of Object.entries(commandOptions)) {
+        // Handle boolean options with a QuickPick
+        if (typeof optionValue.default === "boolean") {
+            if (optionValue.default) {
+                options += ` ${optionKey}`;
+            }
+            else {
+                const enableFlag = await vscode.window.showQuickPick(["Yes", "No"], {
+                    placeHolder: `Enable ${optionKey}? (${optionValue.description})`,
+                });
+                if (enableFlag === "Yes") {
+                    options += ` ${optionKey}`;
+                }
+                else if (enableFlag === undefined) {
+                    // Cancellation
+                    return; // Exit the function early
+                }
+            }
+        }
+        else if (optionValue.default !== null) {
+            const userValue = await askForInput(optionValue.description, optionValue.default.toString());
+            if (userValue !== undefined) {
+                // Ensure it's not a cancellation
+                options += ` ${optionKey} "${userValue}"`;
+            }
+            else {
+                return; // User cancelled the input
+            }
+        }
+        else {
+            console.warn(`Option "${optionKey}" has no default value, and is not handled.`);
+        }
     }
-    options += ` --tx "${tx}"`;
-    // Project path
-    const projectPath = await askForInput("Enter project path (leave blank for default)", ".");
-    if (projectPath)
-        options += ` --project "${projectPath}"`;
-    // Stable Rust flag
-    const useStableRust = await vscode.window.showQuickPick(["Yes", "No"], {
-        placeHolder: "Use Stable Rust?",
-    });
-    if (useStableRust)
-        options += " --stable-rust";
     runCargoStylusReplay(folderPath, options);
 }
 async function askForInput(prompt, defaultValue) {
@@ -133,23 +148,42 @@ async function askForInput(prompt, defaultValue) {
         value: defaultValue,
     });
 }
+function loadCommandOptions(context, commandName) {
+    // Construct the file path using the extension context's extensionPath
+    const filePath = path.join(context.extensionPath, "src/data/cargoConfig.json");
+    try {
+        const rawData = fs.readFileSync(filePath);
+        const config = JSON.parse(rawData.toString());
+        // Dynamically select the command options based on the commandName parameter
+        const commandConfig = config[commandName];
+        if (!commandConfig || !commandConfig.options) {
+            throw new Error(`Command options for '${commandName}' not found.`);
+        }
+        return commandConfig.options;
+    }
+    catch (error) {
+        console.error("Error loading command options:", error);
+        throw new Error(`Failed to load command options for '${commandName}': ${error}`);
+    }
+}
 function runCargoStylusReplay(folderPath, options) {
     const terminal = vscode.window.createTerminal(`Stylus Replay: ${folderPath}`);
     terminal.show();
     terminal.sendText(`cd "${folderPath}" && cargo stylus replay ${options}`);
 }
-function executeCargoStylusReplay(folderPath) {
+function executeCargoStylusReplay(folderPath, commandOptions) {
     vscode.window
         .showQuickPick(["Yes", "No"], {
         placeHolder: "Do you want to add options?",
     })
         .then((answer) => {
         if (answer === "Yes") {
-            collectReplayOptionsAndExecute(folderPath);
+            collectReplayOptionsAndExecute(folderPath, commandOptions);
         }
-        else {
+        else if (answer === "No") {
             runCargoStylusReplay(folderPath, "");
         }
+        // If answer is undefined (Esc was pressed), do nothing
     });
 }
 //# sourceMappingURL=replay.js.map

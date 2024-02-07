@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as childProcess from "child_process";
+
 import { checkCargoStylus } from "../utils/checkCargoStylus";
 import { Project } from "../models/Project";
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
@@ -21,25 +22,43 @@ export function createNewProjectHandler(
                 openLabel: "Select Project Folder",
               })
               .then((folderUri) => {
-                if (folderUri && folderUri[0]) {
+                if (folderUri && folderUri.length > 0) {
                   const projectPath = folderUri[0].fsPath;
 
-                  childProcess.exec(
-                    `cargo stylus new ${projectName}`,
-                    { cwd: projectPath },
-                    (err, stdout, stderr) => {
-                      if (err) {
-                        vscode.window.showErrorMessage(
-                          `Failed to create project: ${err.message}`
+                  // Display progress notification
+                  vscode.window.withProgress(
+                    {
+                      location: vscode.ProgressLocation.Notification,
+                      title: `Creating project "${projectName}"...`,
+                      cancellable: false,
+                    },
+                    () => {
+                      return new Promise<void>((resolve, reject) => {
+                        childProcess.exec(
+                          `cargo stylus new ${projectName}`,
+                          { cwd: projectPath },
+                          (err, stdout, stderr) => {
+                            if (err) {
+                              vscode.window.showErrorMessage(
+                                `Failed to create project: ${err.message}`
+                              );
+                              reject();
+                            } else {
+                              projectDataProvider.addProject(
+                                new Project(
+                                  projectName,
+                                  projectPath,
+                                  new Date()
+                                )
+                              );
+                              vscode.window.showInformationMessage(
+                                `Project "${projectName}" created at ${projectPath}`
+                              );
+                              resolve();
+                            }
+                          }
                         );
-                      } else {
-                        projectDataProvider.addProject(
-                          new Project(projectName, projectPath, new Date())
-                        );
-                        vscode.window.showInformationMessage(
-                          `Project ${projectName} created at ${projectPath}`
-                        );
-                      }
+                      });
                     }
                   );
                 }

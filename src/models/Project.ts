@@ -12,3 +12,12 @@ export class Project extends vscode.TreeItem {
     this.commands = commands;
   }
 }
+
+export interface CommandOption {
+  default: string | boolean | null;
+  description: string;
+}
+
+export interface CommandOptions {
+  [key: string]: CommandOption;
+}
