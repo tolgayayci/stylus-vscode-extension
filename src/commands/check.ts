@@ -6,6 +6,7 @@ import { checkCargoStylus } from "../utils/checkCargoStylus";
 import { checkIsStylusProject } from "../utils/checkIsStylusProject";
 import { ProjectDataProvider } from "../dataProviders/ProjectDataProvider";
 import { Project, CommandOptions } from "../models/Project";
+import * as config from "../data/cargoConfig.json";
 
 export function checkHandler(
   projectDataProvider: ProjectDataProvider,

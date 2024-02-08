@@ -1,11 +1,28 @@
 {
-  "name": "stylus",
-  "displayName": "Stylus",
-  "description": "Arbitrum Stylus Vscode Extension",
-  "version": "0.1.0",
+  "name": "stylussuite",
+  "displayName": "Stylus Suite",
+  "publisher": "tolgayayci",
+  "description": "Arbitrum Stylus Suite to develop, deploy and test smart contracts on Stylus and chat with Stylus GPT.",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tolgayayci/stylus-vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/tolgayayci/stylus-vscode-extension/issues",
+    "email": "tolga@yk-labs.com"
+  },
+  "keywords": [
+    "arbitrum",
+    "stylus",
+    "stylus sdk",
+    "arb",
+    "wasm"
+  ],
+  "icon": "resources/storeLogo.png",
   "categories": [
     "Other"
   ],
@@ -102,11 +119,6 @@
         "view": "projectView",
         "contents": "In order to use this extension you need to create a new stylus project or add existing one.\n[Create New Stylus Project](command:stylusWorkspace.createNewProject)\n[Add Existing One](command:stylusWorkspace.addExistingProject)\nTo learn more about how to use Stylus in VS Code [read extension docs](https://github.com/tolgayayci/stylus-vscode-extension).",
         "when": "stylusWorkspace.cargoStylusInstalled == true"
-      },
-      {
-        "view": "chatView",
-        "contents": "Please configure your StylusGPT API key to start using Chat with Stylus GPT.\n[Configure API Key](command:workbench.action.openSettings?\"StylusGPT.apiKey\")",
-        "when": "stylusGptApiKeySet == false"
       }
     ],
     "viewsContainers": {
@@ -114,7 +126,7 @@
         {
           "id": "stylusWorkspace",
           "title": "Stylus",
-          "icon": "src/media/icons/arbitrum-arb-logo.svg"
+          "icon": "resources/stylus.png"
         }
       ]
     },

@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Finally, append the entire message element to the chat container
     chat.appendChild(messageElement);
+
+    chat.scrollTop = chat.scrollHeight;
   }
   
 
@@ -105,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
       simpleLineBreaks: true
     });
 
+    text = fixCodeBlocks(text);
     let html = converter.makeHtml(text);
     appendMessageToChat(sender, html); 
 
@@ -150,7 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('message', event => {
     const message = event.data;
     switch (message.type) {
+      case 'restoreMessages':
+        removeWelcomeMessage();
+        message.messages.forEach(msg => {
+          setResponse(msg.text, msg.sender);
+        });
+        break;
       case 'response':
+        removeWelcomeMessage();
         removeLoader();
         setResponse(message.text);
         break;

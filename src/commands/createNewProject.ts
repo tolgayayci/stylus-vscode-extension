@@ -47,7 +47,7 @@ export function createNewProjectHandler(
                               projectDataProvider.addProject(
                                 new Project(
                                   projectName,
-                                  projectPath,
+                                  projectPath + "/" + projectName,
                                   new Date()
                                 )
                               );

@@ -38,7 +38,7 @@ class ProjectDataProvider {
     getTreeItem(element) {
         const treeItem = new vscode.TreeItem(element.name);
         treeItem.iconPath = new vscode.ThemeIcon("file-code");
-        treeItem.tooltip = `Project path: ${element.path}`;
+        treeItem.tooltip = `Project path: ${element.path + element.name}`;
         treeItem.contextValue = "project";
         return treeItem;
     }

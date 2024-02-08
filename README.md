@@ -40,27 +40,22 @@ Quickly insert common code patterns and structures into your Stylus projects wit
 
 Each snippet is designed to expedite the development process by providing ready-to-use code templates for common smart contract patterns and functionalities. These snippets support various aspects of smart contract development, from creating and managing token contracts to handling complex data structures and optimizing storage interactions.
 
+#### Stylus GPT Support
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+The Stylus Extension for VS Code also supports the Stylus GPT, a powerful AI-based code generation tool that can help you write smart contracts and other Rust code more efficiently. With Stylus GPT, you can generate code snippets, complete functions, and even entire contracts using natural language descriptions and prompts. This feature is powered by the OpenAI API and requires an API key to use.
+
+P.S: Stylus GPT works well with Cargo Stylus questions because for version 0.1.2, it only trained on Cargo Stylus. It will be improved in the future with more general Stylus and Arbitrum logic.
 
 ## Requirements
 
 This extension requires Visual Studio Code. Additionally, having the Rust and Cargo installed and configured on your system is necessary for Stylus project development.
 
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Stylus CLI]() - The Stylus CLI is required for project management and contract handling.
-- [Open AI API Key (optional)]() - An Open AI API key is required for using Stylus GPT.
+- [Stylus CLI](https://docs.arbitrum.io/stylus/stylus-quickstart#creating-a-stylus-project) - The Stylus CLI is required for project management and contract handling.
+- [Open AI API Key (Optional)](https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key) - An Open AI API key is required for using Stylus GPT.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `StylusGPT.apiKey`: Open AI API key for using Stylus GPT. (You can set this by opening the command palette and click "Preferences: User Settings (UI) after that search Stylus GPT and set the API key.)
 
 ## Known Issues
 
@@ -68,29 +63,15 @@ No known issues at this time. If you encounter any problems, please report them 
 
 ## Release Notes
 
-### 0.1.0
+### 0.1.2
 
-Initial release of ...
+Initial release of the Stylus Extension for VS Code.
+
+- Project management features.
+- Contract handling features.
+- Snippets and templates for smart contract development.
+- Stylus GPT support.
 
 ---
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
 **Enjoy!**

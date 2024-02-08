@@ -51,10 +51,10 @@ export function activate(context: vscode.ExtensionContext) {
 
       let disposableOpenProject = vscode.commands.registerCommand(
         "stylusWorkspace.openProjectFolder",
-        (projectPath) => {
+        (project: Project) => {
           vscode.commands.executeCommand(
             "vscode.openFolder",
-            vscode.Uri.file(projectPath),
+            vscode.Uri.file(project.path),
             true
           );
         }

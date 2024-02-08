@@ -1,45 +1,83 @@
 "use strict";
-// @ts-ignore 
 Object.defineProperty(exports, "__esModule", { value: true });
-// This script will be run within the webview itself
-// It cannot access the main VS Code APIs directly.
-(function () {
-    const vscode = acquireVsCodeApi();
+const vscode = acquireVsCodeApi();
+document.addEventListener('DOMContentLoaded', () => {
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('prompt-input');
+    const welcomeMessageId = 'welcome-message';
     let response = '';
-    // Handle messages sent from the extension to the webview
-    window.addEventListener("message", (event) => {
-        const message = event.data;
-        switch (message.type) {
-            case "addResponse": {
-                response = message.value;
-                setResponse();
-                break;
-            }
-            case "clearResponse": {
-                response = '';
-                break;
-            }
-            case "setPrompt": {
-                document.getElementById("prompt-input").value = message.value;
-                break;
-            }
+    function showWelcomeMessage() {
+        if (!document.getElementById(welcomeMessageId)) {
+            const welcomeMessageContainer = document.createElement('div');
+            welcomeMessageContainer.id = welcomeMessageId;
+            welcomeMessageContainer.classList.add('message', 'assistant');
+            // Create header for the welcome message
+            const welcomeHeader = document.createElement('div');
+            welcomeHeader.classList.add('message-header');
+            welcomeHeader.innerHTML = `<span class="icon-text">StylusGPT</span>`;
+            // Append the header to the welcome message container
+            welcomeMessageContainer.appendChild(welcomeHeader);
+            const welcomeText = document.createElement('div');
+            welcomeText.classList.add('message-content');
+            welcomeText.textContent = 'Welcome to Stylus GPT! Type your question and press Enter to get started.';
+            // Append the welcome text to the welcome message container
+            welcomeMessageContainer.appendChild(welcomeText);
+            chat.appendChild(welcomeMessageContainer);
         }
-    });
+    }
+    function removeWelcomeMessage() {
+        const welcomeMessage = document.getElementById(welcomeMessageId);
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+    }
+    function showLoader() {
+        removeWelcomeMessage();
+        const loader = document.createElement('div');
+        loader.classList.add('loader');
+        chat.appendChild(loader);
+    }
+    function removeLoader() {
+        const loader = chat.querySelector('.loader');
+        if (loader) {
+            loader.remove();
+        }
+    }
     function fixCodeBlocks(response) {
-        // Use a regular expression to find all occurrences of the substring in the string
         const REGEX_CODEBLOCK = new RegExp('\`\`\`', 'g');
         const matches = response.match(REGEX_CODEBLOCK);
-        // Return the number of occurrences of the substring in the response, check if even
         const count = matches ? matches.length : 0;
         if (count % 2 === 0) {
             return response;
         }
         else {
-            // else append ``` to the end to make the last code block complete
             return response.concat('\n\`\`\`');
         }
     }
-    function setResponse() {
+    function appendMessageToChat(sender, htmlContent) {
+        // Create the main message container
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', sender);
+        // Create a header for the message
+        const messageHeader = document.createElement('div');
+        messageHeader.classList.add('message-header');
+        // Set the icon text based on the sender
+        const iconText = sender === 'user' ? 'User' : 'Stylus GPT'; // Replace with your actual icons
+        // Set the innerHTML of the header
+        messageHeader.innerHTML = `<span class="icon-text">${iconText}</span>`;
+        // Append the header to the message element
+        messageElement.appendChild(messageHeader);
+        // Create a content container for the message
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
+        messageContent.innerHTML = htmlContent;
+        // Append the content container to the message element
+        messageElement.appendChild(messageContent);
+        // Finally, append the entire message element to the chat container
+        chat.appendChild(messageElement);
+        chat.scrollTop = chat.scrollHeight;
+    }
+    function setResponse(text = response, sender = 'assistant') {
         var converter = new showdown.Converter({
             omitExtraWLInCodeBlocks: true,
             simplifiedAutoLink: true,
@@ -47,9 +85,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
             literalMidWordUnderscores: true,
             simpleLineBreaks: true
         });
-        response = fixCodeBlocks(response);
-        html = converter.makeHtml(response);
-        document.getElementById("response").innerHTML = html;
+        text = fixCodeBlocks(text);
+        let html = converter.makeHtml(text);
+        appendMessageToChat(sender, html);
         var preCodeBlocks = document.querySelectorAll("pre code");
         for (var i = 0; i < preCodeBlocks.length; i++) {
             preCodeBlocks[i].classList.add("p-2", "my-2", "block", "overflow-x-scroll");
@@ -75,17 +113,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
             d.classList.add("code");
         }
         microlight.reset('code');
-        //document.getElementById("response").innerHTML = document.getElementById("response").innerHTML.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
-    // Listen for keyup events on the prompt input element
-    document.getElementById('prompt-input').addEventListener('keyup', function (e) {
-        // If the key that was pressed was the Enter key
-        if (e.keyCode === 13) {
-            vscode.postMessage({
-                type: 'prompt',
-                value: this.value
-            });
+    showWelcomeMessage();
+    window.addEventListener('message', event => {
+        const message = event.data;
+        switch (message.type) {
+            case 'restoreMessages':
+                removeWelcomeMessage();
+                message.messages.forEach(msg => {
+                    setResponse(msg.text, msg.sender);
+                });
+                break;
+            case 'response':
+                removeWelcomeMessage();
+                removeLoader();
+                setResponse(message.text);
+                break;
+            case 'query':
+                removeWelcomeMessage();
+                setResponse(message.text, 'user');
+                showLoader();
+                vscode.postMessage({
+                    type: 'query',
+                    text: message.text
+                });
+                input.value = '';
+                break;
         }
     });
-})();
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            const query = input.value.trim();
+            if (query) {
+                removeWelcomeMessage();
+                appendMessageToChat('user', query); // Show user message in chat
+                showLoader();
+                vscode.postMessage({
+                    type: 'query',
+                    text: query
+                });
+                input.value = '';
+            }
+        }
+    });
+});
 //# sourceMappingURL=main.js.map

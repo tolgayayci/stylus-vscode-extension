@@ -56,8 +56,8 @@ function activate(context) {
         let disposableAddExistingProject = vscode.commands.registerCommand("stylusWorkspace.addExistingProject", () => {
             (0, addExistingProject_1.addExistingProjectHandler)(projectDataProvider);
         });
-        let disposableOpenProject = vscode.commands.registerCommand("stylusWorkspace.openProjectFolder", (projectPath) => {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(projectPath), true);
+        let disposableOpenProject = vscode.commands.registerCommand("stylusWorkspace.openProjectFolder", (project) => {
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(project.path), true);
         });
         let disposableRemoveProjectFromView = vscode.commands.registerCommand("stylusWorkspace.removeProjectFromView", (project) => {
             if (project && project.path) {

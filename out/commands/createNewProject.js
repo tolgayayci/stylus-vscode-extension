@@ -58,7 +58,7 @@ function createNewProjectHandler(projectDataProvider) {
                                         reject();
                                     }
                                     else {
-                                        projectDataProvider.addProject(new Project_1.Project(projectName, projectPath, new Date()));
+                                        projectDataProvider.addProject(new Project_1.Project(projectName, projectPath + "/" + projectName, new Date()));
                                         vscode.window.showInformationMessage(`Project "${projectName}" created at ${projectPath}`);
                                         resolve();
                                     }
