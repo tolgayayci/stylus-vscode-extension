@@ -1,0 +1,273 @@
+{
+  "name": "stylussuite",
+  "displayName": "Stylus Suite",
+  "publisher": "tolgayayci",
+  "description": "Arbitrum Stylus Suite to develop, deploy and test smart contracts on Stylus and chat with Stylus GPT.",
+  "version": "0.1.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tolgayayci/stylus-vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/tolgayayci/stylus-vscode-extension/issues",
+    "email": "tolga@yk-labs.com"
+  },
+  "keywords": [
+    "arbitrum",
+    "stylus",
+    "stylus sdk",
+    "arb",
+    "wasm"
+  ],
+  "icon": "resources/storeLogo.png",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stylusWorkspace.addExistingProject",
+        "title": "Stylus: Add Project",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "stylusWorkspace.removeProjectFromView",
+        "title": "Stylus: Remove Project",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "stylusWorkspace.createNewProject",
+        "title": "Stylus (Cargo):  Create New Project",
+        "icon": "$(add)"
+      },
+      {
+        "command": "stylusWorkspace.openProjectFolder",
+        "title": "Stylus: Open Project Folder"
+      },
+      {
+        "command": "stylusWorkspace.exportAbi",
+        "title": "Stylus (Cargo): Export Abi"
+      },
+      {
+        "command": "stylusWorkspace.check",
+        "title": "Stylus (Cargo): Check"
+      },
+      {
+        "command": "stylusWorkspace.deploy",
+        "title": "Stylus (Cargo): Deploy"
+      },
+      {
+        "command": "stylusWorkspace.replay",
+        "title": "Stylus (Cargo): Replay"
+      },
+      {
+        "command": "stylusWorkspace.trace",
+        "title": "Stylus (Cargo): Trace"
+      },
+      {
+        "command": "stylusWorkspace.openStylusJson",
+        "title": "Stylus (Cargo): Edit Config",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "stylusWorkspace.openProject",
+        "title": "Open Project"
+      },
+      {
+        "command": "stylusWorkspace.openProjectInNewWindow",
+        "title": "Open Project in New Window"
+      },
+      {
+        "command": "stylusWorkspace.revealInFinder",
+        "title": "Reveal in Finder"
+      },
+      {
+        "command": "stylusWorkspace.addToWorkspace",
+        "title": "Add to Workspace"
+      },
+      {
+        "command": "stylusGpt.explain",
+        "title": "StylusGPT: Explain"
+      },
+      {
+        "command": "stylusGpt.refactor",
+        "title": "StylusGPT: Refactor"
+      },
+      {
+        "command": "stylusGpt.findProblems",
+        "title": "StylusGPT: Find Problems"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "rust",
+        "path": "src/snippets/snippets.json"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "projectView",
+        "contents": "Cargo Stylus is not installed. Please install it to use this extension at full functionality.\n[Install Cargo Stylus](https://github.com/OffchainLabs/cargo-stylus)",
+        "when": "stylusWorkspace.cargoStylusInstalled == false"
+      },
+      {
+        "view": "projectView",
+        "contents": "In order to use this extension you need to create a new stylus project or add existing one.\n[Create New Stylus Project](command:stylusWorkspace.createNewProject)\n[Add Existing One](command:stylusWorkspace.addExistingProject)\nTo learn more about how to use Stylus in VS Code [read extension docs](https://github.com/tolgayayci/stylus-vscode-extension).",
+        "when": "stylusWorkspace.cargoStylusInstalled == true"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "stylusWorkspace",
+          "title": "Stylus",
+          "icon": "resources/stylus.png"
+        }
+      ]
+    },
+    "views": {
+      "stylusWorkspace": [
+        {
+          "id": "projectView",
+          "name": "Projects"
+        },
+        {
+          "type": "webview",
+          "id": "chatView",
+          "name": "Chat with Stylus GPT",
+          "canMoveView": false
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "stylusWorkspace.createNewProject",
+          "when": "view == projectView",
+          "group": "navigation"
+        },
+        {
+          "command": "stylusWorkspace.addExistingProject",
+          "when": "view == projectView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openProject",
+          "group": "navigation@1"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openProjectInNewWindow",
+          "group": "navigation@2"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.revealInFinder",
+          "group": "navigation@3"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.removeProjectFromView",
+          "group": "inline"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openStylusJson",
+          "group": "inline"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.exportAbi",
+          "group": "stylus@1"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.check",
+          "group": "stylus@2"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.deploy",
+          "group": "stylus@3"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.replay",
+          "group": "stylus@4"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.trace",
+          "group": "stylus@5"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.openStylusJson",
+          "group": "stylus@6"
+        },
+        {
+          "when": "view == projectView && viewItem == project",
+          "command": "stylusWorkspace.addToWorkspace",
+          "common": "common@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "stylusGpt.explain",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@1"
+        },
+        {
+          "command": "stylusGpt.refactor",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@2"
+        },
+        {
+          "command": "stylusGpt.findProblems",
+          "when": "editorHasSelection",
+          "group": "stylusGpt-menu-group@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "StylusGPT",
+      "properties": {
+        "StylusGPT.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Specifies the OpenAI API key to use."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "openai": "^4.26.0"
+  }
+}

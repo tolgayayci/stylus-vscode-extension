@@ -1,0 +1,167 @@
+Summary of Available CLI Commands:
+
+1. `cargo stylus new`: Create a new Rust project.
+2. `cargo stylus export-abi`: Export the Application Binary Interface (ABI) of a Rust smart contract project.
+3. `cargo stylus check`: Check the activation status of a Stylus program on the Arbitrum network.
+4. `cargo stylus deploy`: Deploy a Stylus program to the Arbitrum network.
+5. `cargo stylus replay`: Replay a specific transaction within a Stylus project.
+6. `cargo stylus trace`: Trace and analyze the execution of a specific transaction within a Stylus project.
+
+---
+
+1 - Command: cargo stylus new
+
+Description:
+The cargo stylus new command is used to create a new Rust project. This command initializes a new Rust project with the specified name and offers options for customization. It is part of the cargo toolchain, which is Rust's package manager and build tool.
+
+Usage:
+cargo stylus new [OPTIONS] <NAME>
+
+Arguments:
+- <NAME> (required): Specifies the name of the new Rust project. This argument is mandatory and should be replaced with the desired project name.
+
+Options:
+- --minimal: When this option is specified, it creates a minimal program, which includes only the essential files and dependencies, ideal for starting with a lightweight project.
+- -h, --help: Prints help information for the cargo stylus new command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus new command, indicating the installed version of the tool.
+
+Example:
+To create a new Rust project named "my_rust_project" with minimal files, you can use the following command:
+cargo stylus new --minimal my_rust_project
+
+This will initialize a new Rust project named "my_rust_project" with minimal code and dependencies, allowing you to start building your Rust application.
+
+----
+
+2 - Command: cargo stylus export-abi
+
+Description:
+The cargo stylus export-abi command is used to export the Application Binary Interface (ABI) of a Rust smart contract project. ABI defines the interface between a smart contract and external applications, allowing them to interact with the contract. This command is part of the Stylus framework for Rust smart contract development.
+
+Usage:
+cargo stylus export-abi [OPTIONS]
+
+Options:
+- --release: When this option is specified, it builds the project in release mode, optimizing the code for production use.
+- --output <OUTPUT>: This option allows you to specify the output file where the ABI will be saved. If not specified, the ABI will be printed to the standard output (stdout).
+- --json: When this option is used, the ABI will be output in JSON format instead of using the solc (Solidity Compiler). This option requires solc to be installed on your system. You can refer to https://docs.soliditylang.org/en/latest/installing-solidity.html for installation instructions.
+- -h, --help: Prints help information for the cargo stylus export-abi command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus export-abi command, indicating the installed version of the Stylus framework.
+
+Example:
+To export the ABI of a Rust smart contract project in release mode and save it to a file named "contract_abi.json," you can use the following command:
+cargo stylus export-abi --release --output contract_abi.json
+
+This will build the project in release mode, generate the ABI, and save it in JSON format to the "contract_abi.json" file.
+
+----
+
+3 - Command: cargo stylus check
+
+Description:
+The `cargo stylus check` command is used to check the activation status of a Stylus program on the Arbitrum network. It provides various options for specifying the program address, RPC endpoint, private key, and more. This command is part of the Stylus framework for Rust smart contract development on Arbitrum.
+
+Usage:
+cargo stylus check [OPTIONS]
+
+Options:
+- -e, --endpoint <ENDPOINT>: Specifies the RPC endpoint of the Stylus node to connect to. The default endpoint is "https://stylus-testnet.arbitrum.io/rpc".
+- --wasm-file-path <WASM_FILE_PATH>: Specifies a WASM file instead of looking for one in the current directory.
+- --expected-program-address <EXPECTED_PROGRAM_ADDRESS>: Allows you to specify the program address for which you want to check activation. If unspecified, it will compute the next program address from the user's wallet address and nonce, which will require wallet-related flags to be specified. The default address is "0x0000000000000000000000000000000000000000".
+- --private-key-path <PRIVATE_KEY_PATH>: Specifies the file path to a text file containing a private key.
+- --private-key <PRIVATE_KEY>: Provides a private key as a 0x-prefixed hex string to use with the cargo stylus plugin. Caution: This exposes your private key secret in plaintext in your CLI history. It is recommended to use the --private-key-path flag or account keystore options.
+- --keystore-path <KEYSTORE_PATH>: Specifies the path to an Ethereum wallet keystore file, such as the one produced by wallets like clef.
+- --keystore-password-path <KEYSTORE_PASSWORD_PATH>: Specifies the path to a text file containing a password to the specified wallet keystore file.
+- --nightly: Indicates whether to use Rust nightly for the check operation.
+- -h, --help: Prints help information for the cargo stylus check command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus check command, indicating the installed version of the Stylus framework.
+
+Example:
+To check the activation status of a Stylus program with a specific program address using a private key from a keystore file, you can use a command like the following:
+cargo stylus check --expected-program-address 0x123456789ABCDEF --private-key-path /path/to/keystore --keystore-password-path /path/to/password
+
+This command will connect to the specified RPC endpoint, check the activation status of the program, and provide relevant information based on the options provided.
+
+---
+
+4 - Command: cargo stylus deploy
+
+Description:
+The `cargo stylus deploy` command is used to deploy a Stylus program to the Arbitrum network. It allows developers to deploy and activate smart contracts with various customization options. This command is part of the Stylus framework for Rust smart contract development on Arbitrum.
+
+Usage:
+cargo stylus deploy [OPTIONS]
+
+Options:
+- -e, --endpoint <ENDPOINT>: Specifies the RPC endpoint of the Stylus node to connect to. The default endpoint is "https://stylus-testnet.arbitrum.io/rpc".
+- --wasm-file-path <WASM_FILE_PATH>: Specifies a WASM file instead of looking for one in the current directory.
+- --expected-program-address <EXPECTED_PROGRAM_ADDRESS>: Allows you to specify the program address you want to deploy. If unspecified, it will compute the next program address from the user's wallet address and nonce, which will require wallet-related flags to be specified. The default address is "0x0000000000000000000000000000000000000000".
+- --private-key-path <PRIVATE_KEY_PATH>: Specifies the file path to a text file containing a private key.
+- --private-key <PRIVATE_KEY>: Provides a private key as a 0x-prefixed hex string to use with the cargo stylus plugin. Caution: This exposes your private key secret in plaintext in your CLI history. It is recommended to use the --private-key-path flag or account keystore options.
+- --keystore-path <KEYSTORE_PATH>: Specifies the path to an Ethereum wallet keystore file, such as the one produced by wallets like clef.
+- --keystore-password-path <KEYSTORE_PASSWORD_PATH>: Specifies the path to a text file containing a password to the specified wallet keystore file.
+- --nightly: Indicates whether to use Rust nightly for the deployment.
+- --estimate-gas-only: Estimates deployment gas costs without actually deploying the program.
+- --mode <MODE>: By default, submits two transactions to deploy and activate the program to Arbitrum. Alternatively, users can choose to split up the deploy and activate steps into individual transactions. Possible values are "deploy-only" and "activate-only."
+- --activate-program-address <ACTIVATE_PROGRAM_ADDRESS>: If only activating an already-deployed, onchain program, specifies the address of the program to send an activation transaction for.
+- --dry-run: Prepares transactions to send on-chain for deploying and activating a Stylus program but does not send them. Instead, it outputs the prepared transaction data in hexadecimal bytes to files in the directory specified by the --output-tx-data-to-dir flag. This can be useful for sending deployment/activation transactions via other means or tools.
+- --output-tx-data-to-dir <OUTPUT_TX_DATA_TO_DIR>: Specifies the directory where deployment/activation transaction data will be output as bytes.
+
+- -h, --help: Prints help information for the cargo stylus deploy command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus deploy command, indicating the installed version of the Stylus framework.
+
+Example:
+To deploy a Stylus program to Arbitrum with custom options, you can use a command like the following:
+cargo stylus deploy --expected-program-address 0x123456789ABCDEF --private-key-path /path/to/keystore --keystore-password-path /path/to/password
+
+This command will connect to the specified RPC endpoint, deploy the program, and activate it based on the provided options.
+
+---
+
+5 - Command: cargo stylus replay
+
+Description:
+The `cargo stylus replay` command is used to replay a specific transaction (Tx) within a Stylus project. This command allows developers to reproduce and re-execute a transaction that has previously occurred, aiding in debugging or analysis. It provides options for specifying the RPC endpoint, the transaction to replay, the project path, and Rust compiler settings.
+
+Usage:
+cargo stylus replay [OPTIONS] --tx <TX>
+
+Options:
+- -e, --endpoint <ENDPOINT>: Specifies the RPC endpoint to connect to. The default endpoint is "http://localhost:8545".
+- -t, --tx <TX>: Specifies the transaction (Tx) that you want to replay. This option is mandatory and should be provided with the transaction hash or identifier.
+- -p, --project <PROJECT>: Specifies the path to the Stylus project. The default is the current directory (".").
+- -s, --stable-rust: Indicates whether to use stable Rust for replay. Note that nightly Rust may be needed to expand macros in certain cases.
+- -h, --help: Prints help information for the cargo stylus replay command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus replay command, indicating the installed version of the Stylus framework.
+
+Example:
+To replay a specific transaction within a Stylus project, you can use a command like the following:
+cargo stylus replay --tx 0x123456789abcdef --project /path/to/stylus/project
+
+This command will connect to the specified RPC endpoint, identify and replay the specified transaction, and provide relevant output or actions based on the project's settings.
+
+---
+
+6 - Command: cargo stylus trace
+
+Description:
+The `cargo stylus trace` command is used to trace and analyze the execution of a specific transaction (Tx) within a Stylus project. This command allows developers to inspect the details and steps involved in the execution of a transaction, aiding in debugging and analysis. It provides options for specifying the RPC endpoint, the transaction to trace, the project path, and additional settings.
+
+Usage:
+cargo stylus trace [OPTIONS] --tx <TX>
+
+Options:
+- -e, --endpoint <ENDPOINT>: Specifies the RPC endpoint to connect to. The default endpoint is "http://localhost:8545".
+- -t, --tx <TX>: Specifies the transaction (Tx) that you want to trace. This option is mandatory and should be provided with the transaction hash or identifier.
+- -p, --project <PROJECT>: Specifies the path to the Stylus project. The default is the current directory (".").
+- -h, --help: Prints help information for the cargo stylus trace command, providing details on how to use it.
+- -V, --version: Prints the version information of the cargo stylus trace command, indicating the installed version of the Stylus framework.
+
+Example:
+To trace and analyze the execution of a specific transaction within a Stylus project, you can use a command like the following:
+cargo stylus trace --tx 0x123456789abcdef --project /path/to/stylus/project
+
+This command will connect to the specified RPC endpoint, trace the specified transaction, and provide detailed information about its execution within the context of the project.
+
+
+
